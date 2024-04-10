@@ -10,3 +10,9 @@ data class User(
     val userName: String,
     val password: String
 )
+data class UserWithoutPassword(
+    @SerialName(value = "_id")
+    val id: String = ObjectIdGenerator().generate().toString(),
+    val userName: String,
+
+)
