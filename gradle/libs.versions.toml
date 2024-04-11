@@ -4,7 +4,7 @@ kobweb = "0.17.1"
 kotlin = "1.9.23"
 mongodb-kotlin = "5.0.0"
 
-serialization= "1.5.1"
+serialization= "1.4.1"
 
 
 [libraries]

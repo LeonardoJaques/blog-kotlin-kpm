@@ -7,6 +7,7 @@ plugins {
     alias(libs.plugins.jetbrains.compose)
     alias(libs.plugins.serialization.plugin)
     alias(libs.plugins.kobweb.application)
+
 //    alias(libs.plugins.kobwebx.markdown)
 }
 
@@ -38,6 +39,7 @@ kotlin {
             implementation(libs.kobweb.core)
             implementation(libs.kobweb.silk)
             implementation(libs.silk.icons.fa)
+            implementation(libs.kotlinx.serialization)
             implementation(project(":worker"))
 //             implementation(libs.kobwebx.markdown)
         }

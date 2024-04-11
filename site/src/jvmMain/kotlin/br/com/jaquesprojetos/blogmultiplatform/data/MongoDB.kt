@@ -11,9 +11,14 @@ import com.varabyte.kobweb.api.init.InitApiContext
 import kotlinx.coroutines.flow.firstOrNull
 
 
+
 @InitApi
-fun initMongoDB(context: InitApiContext) {
-    context.data.add(MongoDB(context))
+fun initMongoDB(ctx: InitApiContext) {
+    System.setProperty(
+        "org.litote.mongo.test.mapping.service",
+        "org.litote.kmongo.serialization.SerializationClassMappingTypeService"
+    )
+    ctx.data.add(MongoDB(ctx))
 }
 
 class MongoDB(val context: InitApiContext) : MongoRepository {
@@ -21,14 +26,16 @@ class MongoDB(val context: InitApiContext) : MongoRepository {
     private val database = client.getDatabase(DATABASE_NAME)
     private val userCollection = database.getCollection<User>("user")
 
+
     override suspend fun checkUserExistence(user: User): User? {
         return try {
-            userCollection.find(
-                and(
-                    Filters.eq("userName", user.userName),
-                    Filters.eq("password", user.password)
-                )
-            ).firstOrNull()
+            userCollection
+                .find(
+                    Filters.and(
+                        Filters.eq(User::username.name, user.username),
+                        Filters.eq(User::password.name, user.password)
+                    )
+                ).firstOrNull()
         } catch (e: Exception) {
             context.logger.error(e.message.toString())
             null
