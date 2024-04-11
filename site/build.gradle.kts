@@ -26,6 +26,7 @@ kobweb {
     }
 }
 
+
 kotlin {
     configAsKobwebApplication("blogmultiplatform", includeServer = true)
 

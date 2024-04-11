@@ -31,7 +31,7 @@ class MongoDB(val context: InitApiContext) : MongoRepository {
         return try {
             userCollection
                 .find(
-                    Filters.and(
+                    and(
                         Filters.eq(User::username.name, user.username),
                         Filters.eq(User::password.name, user.password)
                     )
@@ -39,6 +39,16 @@ class MongoDB(val context: InitApiContext) : MongoRepository {
         } catch (e: Exception) {
             context.logger.error(e.message.toString())
             null
+        }
+    }
+
+    override suspend fun checkUserId(id: String): Boolean {
+        return try {
+            val documentCount = userCollection.countDocuments(Filters.eq(User::_id.name, id))
+            documentCount > 0
+        } catch (e: Exception) {
+            context.logger.error(e.message.toString())
+            false
         }
     }
 }

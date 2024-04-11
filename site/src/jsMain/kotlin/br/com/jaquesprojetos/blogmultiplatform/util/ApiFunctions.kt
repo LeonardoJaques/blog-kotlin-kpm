@@ -22,6 +22,21 @@ suspend fun checkUserExistence(user: User): UserWithoutPassword? {
     }
 }
 
+suspend fun checkUserId(id: String): Boolean {
+    val result = window.api.tryPost(
+        apiPath = "checkuserid",
+        body = Json.encodeToString(id).encodeToByteArray()
+    )?.decodeToString().parseData<Boolean>()
+
+    return try {
+        result
+    } catch (e: Exception) {
+        println("CURRENT_USER")
+        println(e.message)
+        false
+    }
+}
+
 inline fun <reified T> String?.parseData(): T {
     return Json.decodeFromString(this.toString())
 }
