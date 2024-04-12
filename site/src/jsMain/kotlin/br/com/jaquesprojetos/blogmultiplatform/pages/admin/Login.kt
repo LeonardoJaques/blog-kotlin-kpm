@@ -9,6 +9,7 @@ import androidx.compose.runtime.setValue
 import br.com.jaquesprojetos.blogmultiplatform.models.Theme
 import br.com.jaquesprojetos.blogmultiplatform.models.User
 import br.com.jaquesprojetos.blogmultiplatform.models.UserWithoutPassword
+import br.com.jaquesprojetos.blogmultiplatform.navigation.Screen
 import br.com.jaquesprojetos.blogmultiplatform.styles.LoginInputStyle
 import br.com.jaquesprojetos.blogmultiplatform.util.Constants.FONT_FAMILY
 import br.com.jaquesprojetos.blogmultiplatform.util.Id
@@ -163,7 +164,7 @@ fun LoginScreen() {
                                 )
                                 if (user != null) {
                                     rememberLoggedIn(remember = true, user = user)
-                                    context.router.navigateTo("/admin/")
+                                    context.router.navigateTo(Screen.AdminHome.route)
 
                                 } else {
                                     errorText = "The user doesn't exist."

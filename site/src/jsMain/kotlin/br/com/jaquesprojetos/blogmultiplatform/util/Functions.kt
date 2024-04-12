@@ -3,9 +3,10 @@ package br.com.jaquesprojetos.blogmultiplatform.util
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.setValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import br.com.jaquesprojetos.blogmultiplatform.navigation.Screen
 import com.varabyte.kobweb.core.rememberPageContext
 import kotlinx.browser.localStorage
 import org.w3c.dom.get
@@ -22,7 +23,7 @@ fun isUserLoggedIn( content: @Composable () -> Unit) {
         userIdExists = if (!userId.isNullOrEmpty())  checkUserId(id = userId) else false
         if (!remembered || !userIdExists) {
             // Ensure the router is set up correctly
-            context.router.navigateTo( "/admin/login")
+            context.router.navigateTo( Screen.AdminLogin.route)
         }
     }
 

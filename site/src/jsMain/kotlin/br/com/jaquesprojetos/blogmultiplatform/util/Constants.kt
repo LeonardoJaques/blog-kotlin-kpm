@@ -1,15 +1,24 @@
 package br.com.jaquesprojetos.blogmultiplatform.util
-
 object Constants {
     const val FONT_FAMILY = "Roboto"
     const val SIDE_PANEL_WIDTH = 250
-    const val PAGE_WIDTH = 1920
+    const val PAGE_WIDTH = 100
 
 }
 
 object Res {
     object Image {
         const val logo = "/logo.svg"
+    }
+
+    object FontFamily {
+        object Roboto {
+            const val regular = "fonts/Roboto-Regular.ttf"
+            const val bold = "fonts/Roboto-Bold.ttf"
+            const val medium = "fonts/Roboto-Medium.ttf"
+            const val light = "fonts/Roboto-Light.ttf"
+        }
+
     }
 
     object PathIcon {
@@ -28,6 +37,10 @@ object Res {
 object Id {
     const val usernameInput = "usernameInput"
     const val passwordInput = "passwordInput"
+    const val svgParent = "svgParent"
+    const val vectorIcon = "vectorIcon"
+    const val navigationText = "navigationText"
+
 
 }
 
