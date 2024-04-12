@@ -3,6 +3,7 @@ object Constants {
     const val FONT_FAMILY = "Roboto"
     const val SIDE_PANEL_WIDTH = 250
     const val PAGE_WIDTH = 100
+    const val COLLAPSED_PANEL_HEIGHT = 100
 
 }
 
