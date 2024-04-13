@@ -1,6 +1,8 @@
 
 import com.varabyte.kobweb.gradle.application.extensions.AppBlock.LegacyRouteRedirectStrategy
 import com.varabyte.kobweb.gradle.application.util.configAsKobwebApplication
+import kotlinx.html.link
+import kotlinx.html.script
 
 plugins {
     alias(libs.plugins.kotlin.multiplatform)
@@ -17,7 +19,18 @@ version = "1.0-SNAPSHOT"
 kobweb {
     app {
         index {
-            description.set("Powered by Kobweb")
+            description.set("A Blog about technology byLeonardo Jaques")
+            head.add {
+                script {
+                    src =
+                        "https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js"
+                }
+                link {
+                    rel = "stylesheet"
+                    href = "https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/css/bootstrap.min.css"
+                }
+            }
+
         }
 
         // Only legacy sites need this set. Sites built after 0.16.0 should default to DISALLOW.
@@ -51,3 +64,5 @@ kotlin {
         }
     }
 }
+
+

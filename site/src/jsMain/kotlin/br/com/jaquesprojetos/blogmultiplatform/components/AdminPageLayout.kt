@@ -12,7 +12,7 @@ import com.varabyte.kobweb.compose.ui.Alignment
 import com.varabyte.kobweb.compose.ui.Modifier
 import com.varabyte.kobweb.compose.ui.modifiers.fillMaxSize
 import com.varabyte.kobweb.compose.ui.modifiers.maxWidth
-import org.jetbrains.compose.web.css.vw
+import org.jetbrains.compose.web.css.percent
 
 @Composable
 fun AdminPageLayout(content: @Composable () -> Unit) {
@@ -25,7 +25,7 @@ fun AdminPageLayout(content: @Composable () -> Unit) {
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .maxWidth(Constants.PAGE_WIDTH.vw),
+                .maxWidth(Constants.PAGE_WIDTH.percent),
         ) {
             SidePanel(onMenuClick = {
                 overflowMenuOpened = true
