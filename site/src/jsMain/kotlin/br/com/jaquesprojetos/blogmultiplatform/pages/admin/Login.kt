@@ -15,6 +15,7 @@ import br.com.jaquesprojetos.blogmultiplatform.util.Constants.FONT_FAMILY
 import br.com.jaquesprojetos.blogmultiplatform.util.Id
 import br.com.jaquesprojetos.blogmultiplatform.util.Res
 import br.com.jaquesprojetos.blogmultiplatform.util.checkUserExistence
+import br.com.jaquesprojetos.blogmultiplatform.util.noBorder
 import com.varabyte.kobweb.compose.css.Cursor
 import com.varabyte.kobweb.compose.css.FontWeight
 import com.varabyte.kobweb.compose.css.TextAlign
@@ -24,7 +25,6 @@ import com.varabyte.kobweb.compose.foundation.layout.Column
 import com.varabyte.kobweb.compose.ui.Alignment
 import com.varabyte.kobweb.compose.ui.Modifier
 import com.varabyte.kobweb.compose.ui.modifiers.backgroundColor
-import com.varabyte.kobweb.compose.ui.modifiers.border
 import com.varabyte.kobweb.compose.ui.modifiers.borderRadius
 import com.varabyte.kobweb.compose.ui.modifiers.color
 import com.varabyte.kobweb.compose.ui.modifiers.cursor
@@ -131,20 +131,11 @@ fun LoginScreen() {
                     .height(54.px)
                     .backgroundColor(Theme.Primary.rgb)
                     .color(Theme.White.rgb)
-                    .border(
-                        width = 0.px,
-                        style = LineStyle.None,
-                        color = Color.transparent
-                    )
+                    .noBorder()
                     .borderRadius(r = 4.px)
                     .fontFamily(FONT_FAMILY)
                     .fontWeight(FontWeight.Medium)
                     .fontSize(14.px)
-                    .outline(
-                        width = 0.px,
-                        style = LineStyle.None,
-                        color = Color.transparent
-                    )
                     .onClick {
                         scope.launch {
                             val username =

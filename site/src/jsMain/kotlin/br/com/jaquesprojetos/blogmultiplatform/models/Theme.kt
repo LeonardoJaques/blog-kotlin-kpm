@@ -58,6 +58,15 @@ enum class Theme(
         rgb = rgb(r = 139, g = 109, b = 255)
     ),
 
+    Gray(
+        hex = "#E9E9E9",
+        rgb = rgb(r = 233, g = 233, b = 233)
+    ),
+    DarkGray(
+        hex = "#646464",
+        rgb = rgb(r = 100, g = 100, b = 100)
+    ),
+
 
 
 }
