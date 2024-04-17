@@ -1,5 +1,6 @@
 package br.com.jaquesprojetos.blogmultiplatform.util
 
+import br.com.jaquesprojetos.blogmultiplatform.models.Post
 import br.com.jaquesprojetos.blogmultiplatform.models.RandomJoke
 import br.com.jaquesprojetos.blogmultiplatform.models.User
 import br.com.jaquesprojetos.blogmultiplatform.models.UserWithoutPassword
@@ -81,6 +82,19 @@ suspend fun fetchRandomJoke(onComplete: (RandomJoke) -> Unit) {
             onComplete( RandomJoke(id = -1, joke = "Joke not found!"))
             println("Error: ${e.message}")
         }
+    }
+
+}
+
+suspend fun addPost(post: Post): Boolean{
+    return try {
+        window.api.tryPost(
+            apiPath = "addpost",
+            body = Json.encodeToString(post).encodeToByteArray()
+        )?.decodeToString().parseData<Boolean>()
+    } catch (e: Exception) {
+        println("Error: ${e.message}")
+        false
     }
 
 }

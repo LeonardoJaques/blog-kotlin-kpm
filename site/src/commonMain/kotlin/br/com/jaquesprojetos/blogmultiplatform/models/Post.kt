@@ -1,11 +1,10 @@
 package br.com.jaquesprojetos.blogmultiplatform.models
 
 expect class Post {
-    val id: String
-    val body: String
+    val _id: String
     val author: String
     val title: String
-    val subTitle: String
+    val subrtitle: String
     val date: Long
     val thumbnail: String
     val content: String

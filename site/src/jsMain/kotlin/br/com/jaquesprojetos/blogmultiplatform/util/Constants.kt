@@ -34,6 +34,7 @@ object Res {
         const val subtitle = "/subtitle.svg"
         const val image = "/image.svg"
         const val code = "/code.svg"
+        const val checkmark = "/checkmark.svg"
     }
     object PathIcon {
         const val home =
@@ -56,6 +57,9 @@ object Id {
     const val navigationText = "navigationText"
     const val editor = "editor"
     const val editorPreview = "editorPreview"
+    const val titleInput = "titleInput"
+    const val subtitleInput = "subtitleInput"
+    const val thumbnailInput = "thumbnailInput"
 
 
 }
