@@ -21,7 +21,7 @@ sealed class ControlStyle(val style: String) {
         ControlStyle(style = "<h3><strong>$selectedText</strong></h3>")
 
     data class Quote(val selectedText: String?) : ControlStyle(
-        style = "<div style=\"background-color:#FAFAFA;padding:12px;border-radius:6px;\"><em>❞ $selectedText</em></div>"
+        style = "<div style=\"background-color:#E3E3E3;padding:12px;border-radius:6px;\"><em>❞$selectedText❞</em></div>"
     )
 
     data class Code(val selectedText: String?) : ControlStyle(
