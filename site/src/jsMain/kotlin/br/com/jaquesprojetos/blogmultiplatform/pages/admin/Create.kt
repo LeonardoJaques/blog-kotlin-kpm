@@ -7,9 +7,11 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import br.com.jaquesprojetos.blogmultiplatform.components.AdminPageLayout
-import br.com.jaquesprojetos.blogmultiplatform.components.MessagePopup
+import br.com.jaquesprojetos.blogmultiplatform.components.LinkPopup
+import br.com.jaquesprojetos.blogmultiplatform.components.Popup
 import br.com.jaquesprojetos.blogmultiplatform.models.Category
-import br.com.jaquesprojetos.blogmultiplatform.models.EditorKey
+import br.com.jaquesprojetos.blogmultiplatform.models.ControlStyle
+import br.com.jaquesprojetos.blogmultiplatform.models.EditorControl
 import br.com.jaquesprojetos.blogmultiplatform.models.Post
 import br.com.jaquesprojetos.blogmultiplatform.models.Theme
 import br.com.jaquesprojetos.blogmultiplatform.navigation.Screen
@@ -18,6 +20,10 @@ import br.com.jaquesprojetos.blogmultiplatform.util.Constants.FONT_FAMILY
 import br.com.jaquesprojetos.blogmultiplatform.util.Constants.SIDE_PANEL_WIDTH
 import br.com.jaquesprojetos.blogmultiplatform.util.Id
 import br.com.jaquesprojetos.blogmultiplatform.util.addPost
+import br.com.jaquesprojetos.blogmultiplatform.util.applyControlStyle
+import br.com.jaquesprojetos.blogmultiplatform.util.applyStyle
+import br.com.jaquesprojetos.blogmultiplatform.util.getEditor
+import br.com.jaquesprojetos.blogmultiplatform.util.getSelectedText
 import br.com.jaquesprojetos.blogmultiplatform.util.isUserLoggedIn
 import br.com.jaquesprojetos.blogmultiplatform.util.noBorder
 import com.varabyte.kobweb.browser.file.loadDataUrlFromDisk
@@ -52,6 +58,7 @@ import com.varabyte.kobweb.compose.ui.modifiers.margin
 import com.varabyte.kobweb.compose.ui.modifiers.maxHeight
 import com.varabyte.kobweb.compose.ui.modifiers.maxWidth
 import com.varabyte.kobweb.compose.ui.modifiers.onClick
+import com.varabyte.kobweb.compose.ui.modifiers.onKeyDown
 import com.varabyte.kobweb.compose.ui.modifiers.overflow
 import com.varabyte.kobweb.compose.ui.modifiers.padding
 import com.varabyte.kobweb.compose.ui.modifiers.resize
@@ -102,7 +109,9 @@ data class createPageUiStates(
     var main: Boolean = false,
     var popular: Boolean = false,
     var sponsored: Boolean = false,
-    var messagePopup: Boolean = false,
+    var popup: Boolean = false,
+    var linkPopup: Boolean = false,
+    var imagePopup: Boolean = false,
 
     )
 
@@ -279,6 +288,12 @@ fun CreateScreen() {
                     editorVisibility = uiState.editorVisibility,
                     onEditorVisibilityChange = {
                         uiState = uiState.copy(editorVisibility = !uiState.editorVisibility)
+                    },
+                    onLinkClick = {
+                        uiState = uiState.copy(linkPopup = true)
+                    },
+                    onLImageClick = {
+                        uiState = uiState.copy(imagePopup = true)
                     }
 
                 )
@@ -297,6 +312,7 @@ fun CreateScreen() {
                         uiState =
                             uiState.copy(thumbnail = (document.getElementById(Id.thumbnailInput) as HTMLInputElement).value)
                     }
+
                     if (
                         uiState.title.isNotEmpty() &&
                         uiState.subtitle.isNotEmpty() &&
@@ -325,22 +341,51 @@ fun CreateScreen() {
                     } else {
                         println("Please fill all fields")
                         scope.launch {
-                            uiState = uiState.copy(messagePopup = true)
+                            uiState = uiState.copy(popup = true)
                             delay(2000)
-                            uiState = uiState.copy(messagePopup = false)
+                            uiState = uiState.copy(popup = false)
                         }
                     }
                 })
-                if (uiState.messagePopup) {
-                    MessagePopup(
-                        message = "Please fill all fields",
-                        onDialogDismiss = { uiState = uiState.copy(messagePopup = false) }
-                    )
-
-                }
             }
+            if (uiState.popup) {
+                Popup(
+                    message = "Please fill all fields",
+                    onDialogDismiss = { uiState = uiState.copy(popup = false) }
+                )
+            }
+            if (uiState.linkPopup) {
+                LinkPopup(
+                    editorControl = EditorControl.Link,
+                    onDialogDismiss = { uiState = uiState.copy(linkPopup = false) },
+                    onAddClick = { href, title ->
+                        applyStyle(
+                            ControlStyle.Link(
+                                selectedText = getSelectedText(),
+                                href = href,
+                                title = title
+                            )
+                        )
+                    })
+            }
+            if (uiState.imagePopup) {
+                LinkPopup(
+                    editorControl = EditorControl.Image,
+                    onDialogDismiss = { uiState = uiState.copy(imagePopup = false) },
+                    onAddClick = { imageUrl, description ->
+                        applyStyle(
+                            ControlStyle.Image(
+                                selectedText = getSelectedText(),
+                                imageUrl = imageUrl,
+                                alt = description
+                            )
+                        )
+                    })
+            }
+
         }
     }
+
 }
 
 @Composable
@@ -461,6 +506,8 @@ fun ThumbNailUploader(
 fun EditorControls(
     breakpoint: Breakpoint,
     editorVisibility: Boolean,
+    onLinkClick: () -> Unit = {},
+    onLImageClick: () -> Unit = {},
     onEditorVisibilityChange: () -> Unit,
 ) {
     Box(modifier = Modifier.fillMaxWidth()) {
@@ -474,8 +521,17 @@ fun EditorControls(
                     .backgroundColor(Theme.LightGray.rgb)
                     .borderRadius(4.px)
             ) {
-                EditorKey.entries.forEach {
-                    EditorKeyView(key = it)
+                EditorControl.entries.forEach {
+                    EditorControlView(
+                        control = it,
+                        onClick = {
+                            applyControlStyle(
+                                editorControl = it,
+                                onLinkClick = onLinkClick,
+                                onImageClick = onLImageClick
+                            )
+                        }
+                    )
                 }
             }
             Box(
@@ -498,7 +554,11 @@ fun EditorControls(
                             if (editorVisibility) Theme.DarkGray.rgb else Theme.White.rgb
                         )
                         .noBorder()
-                        .onClick { onEditorVisibilityChange() }
+                        .onClick {
+                            onEditorVisibilityChange()
+                            document.getElementById(Id.editorPreview)?.innerHTML = getEditor().value
+                            js("hljs.highlightAll()") as Unit
+                        }
                         .toAttrs()
                 ) {
                     SpanText(
@@ -515,19 +575,23 @@ fun EditorControls(
 }
 
 @Composable
-fun EditorKeyView(key: EditorKey) {
+fun EditorControlView(
+    control: EditorControl,
+    onClick: () -> Unit,
+
+    ) {
     Box(
         modifier = EditorKeyStyle.toModifier()
             .fillMaxHeight()
             .padding(leftRight = 12.px)
             .borderRadius(4.px)
             .cursor(Cursor.Pointer)
-            .onClick { },
+            .onClick { onClick() },
         contentAlignment = Alignment.Center
     ) {
         Image(
-            src = key.icon,
-            description = "${key.name} icon",
+            src = control.icon,
+            description = "${control.name} icon",
             modifier = Modifier.fillMaxSize()
         )
     }
@@ -553,6 +617,15 @@ fun Editor(editorVisibility: Boolean) {
                 .noBorder()
                 .resize(Resize.None)
                 .visibility(if (editorVisibility) Visibility.Visible else Visibility.Hidden)
+                .onKeyDown {
+                    if (it.code == "Enter" && it.shiftKey) {
+                        applyStyle(
+                            controlStyle = ControlStyle.Break(
+                                selectedText = getSelectedText()
+                            )
+                        )
+                    }
+                }
                 .toAttrs {
                     attr("placeholder", "Write your article here...")
                 }

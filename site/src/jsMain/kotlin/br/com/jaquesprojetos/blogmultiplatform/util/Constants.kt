@@ -60,6 +60,10 @@ object Id {
     const val titleInput = "titleInput"
     const val subtitleInput = "subtitleInput"
     const val thumbnailInput = "thumbnailInput"
+    const val linkHrefInput = "linkHrefInput"
+    const val linkTitleInput = "linkTitleInput"
+
+
 
 
 }

@@ -1,4 +1,3 @@
-
 import com.varabyte.kobweb.gradle.application.extensions.AppBlock.LegacyRouteRedirectStrategy
 import com.varabyte.kobweb.gradle.application.util.configAsKobwebApplication
 import kotlinx.html.link
@@ -29,6 +28,14 @@ kobweb {
                     rel = "stylesheet"
                     href = "https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/css/bootstrap.min.css"
                 }
+
+                script {
+                    src = "https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.2.0/highlight.min.js"
+                }
+                link {
+                    rel = "stylesheet"
+                    href = "/github-dark.css"
+                }
             }
 
         }
@@ -54,6 +61,7 @@ kotlin {
             implementation(libs.kobweb.silk)
             implementation(libs.silk.icons.fa)
             implementation(libs.kotlinx.serialization)
+            implementation("com.varabyte.kobweb:compose-html-ext:...")
             implementation(project(":worker"))
 //             implementation(libs.kobwebx.markdown)
         }

@@ -1,5 +1,5 @@
 site:
-  title: "blog multiplatform"
+  title: "Leonardo jaques Multiverse"
 
 server:
   files:
@@ -11,4 +11,4 @@ server:
       script: "build/dist/js/productionExecutable/blogmultiplatform.js"
       siteRoot: ".kobweb/site"
 
-  port: 8080
+  port: 3000
