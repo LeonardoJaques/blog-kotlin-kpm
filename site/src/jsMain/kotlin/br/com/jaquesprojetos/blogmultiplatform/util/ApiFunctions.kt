@@ -1,5 +1,6 @@
 package br.com.jaquesprojetos.blogmultiplatform.util
 
+import br.com.jaquesprojetos.blogmultiplatform.models.ApiListResponse
 import br.com.jaquesprojetos.blogmultiplatform.models.Post
 import br.com.jaquesprojetos.blogmultiplatform.models.RandomJoke
 import br.com.jaquesprojetos.blogmultiplatform.models.User
@@ -97,6 +98,21 @@ suspend fun addPost(post: Post): Boolean{
         false
     }
 
+}
+
+suspend fun fetchMyPosts(
+    skip: Int,
+    onSuccess: (ApiListResponse) -> Unit,
+    onError: (Exception)->Unit
+    ) {
+    return try {
+        val result = window.api.tryGet(
+            apiPath = "readmyposts?skip=$skip&author=${localStorage["username"]}",
+        )?.decodeToString()
+        onSuccess(result.parseData())
+    } catch (e: Exception) {
+        onError(e)
+    }
 }
 
 inline fun <reified T> String?.parseData(): T {

@@ -4,7 +4,7 @@ expect class Post {
     val _id: String
     val author: String
     val title: String
-    val subrtitle: String
+    val subtitle: String
     val date: Long
     val thumbnail: String
     val content: String
@@ -12,5 +12,16 @@ expect class Post {
     val popular: Boolean
     val main: Boolean
     val sponsored: Boolean
+
+}
+
+expect class PostWithoutDetails {
+    val _id: String
+    val author: String
+    val title: String
+    val subtitle: String
+    val date: Long
+    val thumbnail: String
+    val category: Category
 
 }

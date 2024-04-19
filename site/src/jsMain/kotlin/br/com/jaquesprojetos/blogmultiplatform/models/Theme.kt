@@ -36,6 +36,10 @@ enum class Theme(
         hex = "#000000",
         rgb = rgba(r = 0, g = 0, b = 0, a = 0.5)
     ),
+    HalfBlackShadow(
+        hex = "#000000",
+        rgb = rgba(r = 0, g = 0, b = 0, a = 0.1)
+    ),
     Error(
         hex = "#FF2F2F",
         rgb = rgb(r = 255, g = 47, b = 47)

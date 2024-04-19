@@ -9,7 +9,7 @@ actual data class Post(
     actual val _id: String = "",
     actual val author: String,
     actual val title: String,
-    actual val subrtitle: String,
+    actual val subtitle: String,
     actual val date: Long,
     actual val thumbnail: String,
     actual val content: String,
@@ -18,3 +18,15 @@ actual data class Post(
     actual val main: Boolean = false,
     actual val sponsored: Boolean = false,
 )
+@Serializable
+actual data class PostWithoutDetails(
+    @SerialName("_id")
+    actual val _id: String,
+    actual val author: String,
+    actual val title: String,
+    actual val subtitle: String,
+    actual val date: Long,
+    actual val thumbnail: String,
+    actual val category: Category,
+)
+

@@ -324,7 +324,7 @@ fun CreateScreen() {
                                 Post(
                                     author = localStorage["username"].toString(),
                                     title = uiState.title,
-                                    subrtitle = uiState.subtitle,
+                                    subtitle = uiState.subtitle,
                                     date = Date.now().toLong(),
                                     thumbnail = uiState.thumbnail,
                                     content = uiState.content,

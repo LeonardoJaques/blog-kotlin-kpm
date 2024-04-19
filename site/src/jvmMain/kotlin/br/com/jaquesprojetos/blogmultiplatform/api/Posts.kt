@@ -1,6 +1,7 @@
 package br.com.jaquesprojetos.blogmultiplatform.api
 
 import br.com.jaquesprojetos.blogmultiplatform.data.MongoDB
+import br.com.jaquesprojetos.blogmultiplatform.models.ApiListResponse
 import br.com.jaquesprojetos.blogmultiplatform.models.Post
 import com.varabyte.kobweb.api.Api
 import com.varabyte.kobweb.api.ApiContext
@@ -21,5 +22,25 @@ suspend fun addPost(context: ApiContext) {
         } ?: false.toString())
     } catch (e: Exception) {
         context.res.setBodyText(Json.encodeToString(e.message))
+    }
+}
+
+@Api(routeOverride = "readmyposts")
+suspend fun readMyPosts(context: ApiContext) {
+    try {
+        val skip = context.req.params["skip"]?.toInt() ?: 0
+        val author = context.req.params["author"] ?: ""
+        val result = context.data.getValue<MongoDB>().readMyPosts(skip = skip, author = author)
+         context.res.setBodyText(
+            Json.encodeToString(
+                ApiListResponse.Success(data = result)
+            )
+         )
+    } catch (e: Exception) {
+        context.res.setBodyText(
+            Json.encodeToString(
+                ApiListResponse.Error(message = e.message.toString())
+            )
+        )
     }
 }

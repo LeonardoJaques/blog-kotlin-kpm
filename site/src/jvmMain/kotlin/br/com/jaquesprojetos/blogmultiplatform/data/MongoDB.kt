@@ -1,16 +1,19 @@
 package br.com.jaquesprojetos.blogmultiplatform.data
 
 import br.com.jaquesprojetos.blogmultiplatform.models.Post
+import br.com.jaquesprojetos.blogmultiplatform.models.PostWithoutDetails
 import br.com.jaquesprojetos.blogmultiplatform.models.User
 import br.com.jaquesprojetos.blogmultiplatform.util.Constants.DATABASE_NAME
+import br.com.jaquesprojetos.blogmultiplatform.util.Constants.POSTS_PER_PAGE
 import com.mongodb.client.model.Filters
 import com.mongodb.client.model.Filters.and
+import com.mongodb.client.model.Sorts.descending
 import com.mongodb.kotlin.client.coroutine.MongoClient
 import com.varabyte.kobweb.api.data.add
 import com.varabyte.kobweb.api.init.InitApi
 import com.varabyte.kobweb.api.init.InitApiContext
 import kotlinx.coroutines.flow.firstOrNull
-
+import kotlinx.coroutines.flow.toList
 
 
 @InitApi
@@ -35,6 +38,15 @@ class MongoDB(val context: InitApiContext) : MongoRepository {
             context.logger.error(e.message.toString())
             false
         }
+    }
+
+    override suspend fun readMyPosts(skip: Int, author: String): List<PostWithoutDetails> {
+        return postCollection.withDocumentClass(PostWithoutDetails::class.java)
+            .find(Filters.eq(PostWithoutDetails::author.name, author))
+            .sort(descending(PostWithoutDetails::date.name))
+            .skip(skip)
+            .limit(POSTS_PER_PAGE)
+            .toList()
     }
 
 
