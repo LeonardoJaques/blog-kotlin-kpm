@@ -58,7 +58,7 @@ suspend fun fetchRandomJoke(onComplete: (RandomJoke) -> Unit) {
                 localStorage["date"] = Date.now().toString()
                 localStorage["joke"] = result
             } catch (e: Exception) {
-                onComplete( RandomJoke(id = -1, joke = "Joke not found!"))
+                onComplete(RandomJoke(id = -1, joke = "Joke not found!"))
                 println("Error: ${e.message}")
             }
 
@@ -67,7 +67,7 @@ suspend fun fetchRandomJoke(onComplete: (RandomJoke) -> Unit) {
                 localStorage["joke"]?.let { Json.decodeFromString<RandomJoke>(it) }
                     ?.let { onComplete(it) }
             } catch (e: Exception) {
-                onComplete( RandomJoke(id = -1, joke = "Joke not found!"))
+                onComplete(RandomJoke(id = -1, joke = "Joke not found!"))
                 println("Error: ${e.message}")
 
             }
@@ -80,14 +80,14 @@ suspend fun fetchRandomJoke(onComplete: (RandomJoke) -> Unit) {
             localStorage["date"] = Date.now().toString()
             localStorage["joke"] = result
         } catch (e: Exception) {
-            onComplete( RandomJoke(id = -1, joke = "Joke not found!"))
+            onComplete(RandomJoke(id = -1, joke = "Joke not found!"))
             println("Error: ${e.message}")
         }
     }
 
 }
 
-suspend fun addPost(post: Post): Boolean{
+suspend fun addPost(post: Post): Boolean {
     return try {
         window.api.tryPost(
             apiPath = "addpost",
@@ -103,8 +103,8 @@ suspend fun addPost(post: Post): Boolean{
 suspend fun fetchMyPosts(
     skip: Int,
     onSuccess: (ApiListResponse) -> Unit,
-    onError: (Exception)->Unit
-    ) {
+    onError: (Exception) -> Unit,
+) {
     return try {
         val result = window.api.tryGet(
             apiPath = "readmyposts?skip=$skip&author=${localStorage["username"]}",
@@ -112,6 +112,19 @@ suspend fun fetchMyPosts(
         onSuccess(result.parseData())
     } catch (e: Exception) {
         onError(e)
+    }
+}
+
+suspend fun deleteSelectedPosts(ids: List<String>): Boolean {
+    return try {
+         window.api.tryPost(
+            apiPath = "deleteselectedposts",
+            body = Json.encodeToString(ids).encodeToByteArray()
+        )?.decodeToString()
+        true
+    } catch (e: Exception) {
+        println(e.message)
+        false
     }
 }
 

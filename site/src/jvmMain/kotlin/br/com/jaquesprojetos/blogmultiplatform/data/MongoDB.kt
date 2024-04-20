@@ -74,6 +74,13 @@ class MongoDB(val context: InitApiContext) : MongoRepository {
             false
         }
     }
+
+    override suspend fun deleteSelectedPost(ids: List<String>): Boolean {
+        return postCollection
+            .deleteMany(Filters.`in`(Post::_id.name, ids))
+            .wasAcknowledged()
+
+    }
 }
 
 

@@ -17,10 +17,12 @@ import br.com.jaquesprojetos.blogmultiplatform.models.Theme
 import br.com.jaquesprojetos.blogmultiplatform.util.Constants.FONT_FAMILY
 import br.com.jaquesprojetos.blogmultiplatform.util.Constants.POSTS_PER_PAGE
 import br.com.jaquesprojetos.blogmultiplatform.util.Constants.SIDE_PANEL_WIDTH
+import br.com.jaquesprojetos.blogmultiplatform.util.deleteSelectedPosts
 import br.com.jaquesprojetos.blogmultiplatform.util.fetchMyPosts
 import br.com.jaquesprojetos.blogmultiplatform.util.isUserLoggedIn
 import br.com.jaquesprojetos.blogmultiplatform.util.noBorder
 import br.com.jaquesprojetos.blogmultiplatform.util.parseSwitchText
+import com.varabyte.kobweb.compose.css.Visibility
 import com.varabyte.kobweb.compose.foundation.layout.Arrangement
 import com.varabyte.kobweb.compose.foundation.layout.Box
 import com.varabyte.kobweb.compose.foundation.layout.Column
@@ -38,6 +40,7 @@ import com.varabyte.kobweb.compose.ui.modifiers.height
 import com.varabyte.kobweb.compose.ui.modifiers.margin
 import com.varabyte.kobweb.compose.ui.modifiers.onClick
 import com.varabyte.kobweb.compose.ui.modifiers.padding
+import com.varabyte.kobweb.compose.ui.modifiers.visibility
 import com.varabyte.kobweb.compose.ui.toAttrs
 import com.varabyte.kobweb.core.Page
 import com.varabyte.kobweb.silk.components.forms.Switch
@@ -62,10 +65,10 @@ fun MyPostsScreen() {
     val scope = rememberCoroutineScope()
     val myPosts = remember { mutableStateListOf<PostWithoutDetails>() }
     var selectable by remember { mutableStateOf(false) }
-    var switchText by remember { mutableStateOf("select") }
+    var switchText by remember { mutableStateOf("Select") }
     var shoMoreVisibility by remember { mutableStateOf(false) }
     var postToSkip by remember { mutableStateOf(0) }
-    var selectedPosts = remember { mutableStateListOf<String>() }
+    val selectedPosts = remember { mutableStateListOf<String>() }
     LaunchedEffect(Unit) {
         fetchMyPosts(
             skip = postToSkip,
@@ -121,7 +124,7 @@ fun MyPostsScreen() {
                         onCheckedChange = {
                             selectable = it
                             if (!selectable) {
-                                switchText = "select"
+                                switchText = "Select"
                                 selectedPosts.clear()
                             } else {
                                 switchText = "0 posts selected"
@@ -150,7 +153,23 @@ fun MyPostsScreen() {
                         .fontFamily(FONT_FAMILY)
                         .fontSize(14.px)
                         .height(54.px)
-                        .onClick { }
+                        .visibility(if (selectedPosts.isNotEmpty()) Visibility.Visible else Visibility.Hidden)
+                        .onClick {
+                            scope.launch {
+                                val result = deleteSelectedPosts(ids = selectedPosts)
+                                if (result) {
+                                    selectable = false
+                                    switchText = "Select"
+                                    postToSkip -= selectedPosts.size
+                                    selectedPosts.forEach { deletedPostId ->
+                                        myPosts.removeAll {
+                                            it._id == deletedPostId
+                                        }
+                                    }
+                                    selectedPosts.clear()
+                                }
+                            }
+                        }
                         .toAttrs()
                 ) {
                     SpanText(text = "Delete")

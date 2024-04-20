@@ -31,11 +31,11 @@ suspend fun readMyPosts(context: ApiContext) {
         val skip = context.req.params["skip"]?.toInt() ?: 0
         val author = context.req.params["author"] ?: ""
         val result = context.data.getValue<MongoDB>().readMyPosts(skip = skip, author = author)
-         context.res.setBodyText(
+        context.res.setBodyText(
             Json.encodeToString(
                 ApiListResponse.Success(data = result)
             )
-         )
+        )
     } catch (e: Exception) {
         context.res.setBodyText(
             Json.encodeToString(
@@ -43,4 +43,20 @@ suspend fun readMyPosts(context: ApiContext) {
             )
         )
     }
+}
+
+@Api(routeOverride = "deleteselectedposts")
+suspend fun deleteSelectedPosts(context: ApiContext) = try {
+    val request = context.req.body?.decodeToString()?.let {
+        Json.decodeFromString<List<String>>(it)
+    }
+    context.res.setBodyText(
+        Json.encodeToString(
+            request?.let {
+                context.data.getValue<MongoDB>().deleteSelectedPost(ids = it).toString()
+            }
+        )
+    )
+} catch (e: Exception) {
+    context.res.setBodyText(Json.encodeToString(e.message))
 }
