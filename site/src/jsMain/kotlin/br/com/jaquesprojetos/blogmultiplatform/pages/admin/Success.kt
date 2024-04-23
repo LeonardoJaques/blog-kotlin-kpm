@@ -2,6 +2,7 @@ package br.com.jaquesprojetos.blogmultiplatform.pages.admin
 
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import br.com.jaquesprojetos.blogmultiplatform.models.Constants.UPDATE_PARAM
 import br.com.jaquesprojetos.blogmultiplatform.models.Theme
 import br.com.jaquesprojetos.blogmultiplatform.navigation.Screen
 import br.com.jaquesprojetos.blogmultiplatform.util.Constants.FONT_FAMILY
@@ -32,6 +33,7 @@ fun SuccessPage() {
 @Composable
 fun SuccessScreen() {
     val context = rememberPageContext()
+    val postUpdated = context.route.params.contains(UPDATE_PARAM)
     LaunchedEffect(Unit) {
         delay(5000)
         context.router.navigateTo(Screen.AdminCreate.route)
@@ -47,7 +49,7 @@ fun SuccessScreen() {
             modifier = Modifier.margin(bottom = 24.px)
         )
         SpanText(
-            text = "Post created successfully!",
+            text = if (postUpdated) "Post successfully updated!" else "Post successfully created!",
             modifier = Modifier
                 .fontSize(24.px)
                 .fontFamily(FONT_FAMILY)

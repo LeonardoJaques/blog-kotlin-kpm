@@ -1,6 +1,11 @@
 package br.com.jaquesprojetos.blogmultiplatform.util
 
 import br.com.jaquesprojetos.blogmultiplatform.models.ApiListResponse
+import br.com.jaquesprojetos.blogmultiplatform.models.ApiResponse
+import br.com.jaquesprojetos.blogmultiplatform.models.Constants.AUTHOR_PARAM
+import br.com.jaquesprojetos.blogmultiplatform.models.Constants.POST_ID_PARAM
+import br.com.jaquesprojetos.blogmultiplatform.models.Constants.QUERY_PARAM
+import br.com.jaquesprojetos.blogmultiplatform.models.Constants.SKIP_PARAM
 import br.com.jaquesprojetos.blogmultiplatform.models.Post
 import br.com.jaquesprojetos.blogmultiplatform.models.RandomJoke
 import br.com.jaquesprojetos.blogmultiplatform.models.User
@@ -100,6 +105,18 @@ suspend fun addPost(post: Post): Boolean {
 
 }
 
+suspend fun updatePost(post: Post): Boolean {
+    return try {
+        window.api.tryPost(
+            apiPath = "updatepost",
+            body = Json.encodeToString(post).encodeToByteArray()
+        )?.decodeToString().toBoolean()
+    } catch (e: Exception) {
+        println("Error: ${e.message}")
+        false
+    }
+}
+
 suspend fun fetchMyPosts(
     skip: Int,
     onSuccess: (ApiListResponse) -> Unit,
@@ -107,7 +124,7 @@ suspend fun fetchMyPosts(
 ) {
     return try {
         val result = window.api.tryGet(
-            apiPath = "readmyposts?skip=$skip&author=${localStorage["username"]}",
+            apiPath = "readmyposts?${SKIP_PARAM}=$skip&${AUTHOR_PARAM}=${localStorage["username"]}",
         )?.decodeToString()
         onSuccess(result.parseData())
     } catch (e: Exception) {
@@ -117,7 +134,7 @@ suspend fun fetchMyPosts(
 
 suspend fun deleteSelectedPosts(ids: List<String>): Boolean {
     return try {
-         window.api.tryPost(
+     window.api.tryPost(
             apiPath = "deleteselectedposts",
             body = Json.encodeToString(ids).encodeToByteArray()
         )?.decodeToString()
@@ -125,6 +142,34 @@ suspend fun deleteSelectedPosts(ids: List<String>): Boolean {
     } catch (e: Exception) {
         println(e.message)
         false
+    }
+}
+
+suspend fun searchPostByTitle(
+    query: String,
+    skip: Int,
+    onSuccess: (ApiListResponse) -> Unit,
+    onError: (Exception) -> Unit,
+) {
+    return try {
+        val result = window.api.tryGet(
+            apiPath = "searchpostbytitle?${QUERY_PARAM}=$query&${SKIP_PARAM}=$skip",
+        )?.decodeToString()
+        onSuccess(result.parseData())
+    } catch (e: Exception) {
+        onError(e)
+    }
+}
+
+suspend fun fetchSelectedPost(id: String): ApiResponse {
+    return try {
+        val result = window.api.tryGet(
+            apiPath = "readselectedpost?${POST_ID_PARAM}=$id"
+        )?.decodeToString()
+        result?.parseData<ApiResponse>() ?: ApiResponse.Error(message = "Result is null")
+    } catch (e: Exception) {
+        println(e)
+        ApiResponse.Error(message = e.message.toString())
     }
 }
 
