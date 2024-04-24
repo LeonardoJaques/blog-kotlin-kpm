@@ -161,7 +161,6 @@ fun PostPreview(
                     .fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically,
-
                 ) {
                 CategoryChip(category = postDetails.category)
                 if (selectableMode) {
