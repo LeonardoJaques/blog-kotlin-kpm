@@ -10,8 +10,10 @@ interface MongoRepository {
    suspend fun addPost(post: Post): Boolean
    suspend fun updatePost(post: Post): Boolean
    suspend fun readSelectedPost(id: String): Post
+   suspend fun readMainPosts(): List<PostWithoutDetails>
    suspend fun readMyPosts(skip: Int, author: String): List<PostWithoutDetails>
    suspend fun searchPostByTitle(query: String, skip: Int): List<PostWithoutDetails>
    suspend fun deleteSelectedPost(ids: List<String>): Boolean
+
 
 }

@@ -57,6 +57,17 @@ suspend fun updatePost(context: ApiContext) {
     }
 }
 
+
+@Api(routeOverride = "readmainposts")
+suspend fun readMainPosts(context: ApiContext) {
+    try {
+        val mainPosts = context.data.getValue<MongoDB>().readMainPosts()
+        context.res.setBody(ApiListResponse.Success(data = mainPosts))
+    } catch (e: Exception) {
+        context.res.setBody(ApiListResponse.Error(message = e.message.toString()))
+    }
+}
+
 @Api(routeOverride = "readmyposts")
 suspend fun readMyPosts(context: ApiContext) {
     try {
@@ -129,7 +140,7 @@ inline fun <reified T> Response.setBody(data: T) {
 }
 
 inline fun <reified T> Request.getBody(): T? {
-   return body?.decodeToString()?.let {
-       return Json.decodeFromString(it)
-   }
+    return body?.decodeToString()?.let {
+        return Json.decodeFromString(it)
+    }
 }

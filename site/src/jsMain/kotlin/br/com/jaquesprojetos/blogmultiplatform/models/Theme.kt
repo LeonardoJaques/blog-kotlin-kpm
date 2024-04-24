@@ -6,7 +6,7 @@ import org.jetbrains.compose.web.css.rgba
 
 enum class Theme(
     val hex: String,
-    val rgb: CSSColorValue
+    val rgb: CSSColorValue,
 ) {
     Primary(
         hex = "#00A2FF",
@@ -40,6 +40,10 @@ enum class Theme(
         hex = "#000000",
         rgb = rgba(r = 0, g = 0, b = 0, a = 0.1)
     ),
+    Tertiary(
+        hex = "#001925",
+        rgb = rgb(r = 0, g = 25, b = 37)
+    ),
     Error(
         hex = "#FF2F2F",
         rgb = rgb(r = 255, g = 47, b = 47)
@@ -70,7 +74,6 @@ enum class Theme(
         hex = "#646464",
         rgb = rgb(r = 100, g = 100, b = 100)
     ),
-
 
 
 }

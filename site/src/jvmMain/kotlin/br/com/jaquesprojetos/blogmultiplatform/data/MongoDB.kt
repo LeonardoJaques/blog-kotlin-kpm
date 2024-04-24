@@ -5,6 +5,7 @@ import br.com.jaquesprojetos.blogmultiplatform.models.Post
 import br.com.jaquesprojetos.blogmultiplatform.models.PostWithoutDetails
 import br.com.jaquesprojetos.blogmultiplatform.models.User
 import br.com.jaquesprojetos.blogmultiplatform.util.Constants.DATABASE_NAME
+import br.com.jaquesprojetos.blogmultiplatform.util.Constants.MAIN_POSTS_LIMIT
 import com.mongodb.client.model.Filters
 import com.mongodb.client.model.Filters.and
 import com.mongodb.client.model.Sorts.descending
@@ -74,6 +75,14 @@ class MongoDB(val context: InitApiContext) : MongoRepository {
         return postCollection.find(Filters.eq(Post::_id.name, id))
             .toList().firstOrNull()
             ?: throw Exception("Post not found")
+    }
+
+    override suspend fun readMainPosts(): List<PostWithoutDetails> {
+        return postCollection.withDocumentClass(PostWithoutDetails::class.java)
+            .find(Filters.eq(PostWithoutDetails::main.name, true))
+            .sort(descending(PostWithoutDetails::date.name))
+            .limit(MAIN_POSTS_LIMIT)
+            .toList()
     }
 
     override suspend fun searchPostByTitle(query: String, skip: Int): List<PostWithoutDetails> {

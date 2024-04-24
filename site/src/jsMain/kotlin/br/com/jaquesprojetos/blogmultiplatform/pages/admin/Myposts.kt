@@ -161,7 +161,10 @@ fun MyPostsScreen() {
                         } else {
                             context.router.navigateTo(Screen.AdminMyPosts.route)
                         }
-                    }
+                    },
+                    breakpoint = breakpoint,
+                    onSearchIconClick = {}
+
                 )
             }
             Row(
