@@ -28,9 +28,10 @@ fun HomePage() {
     var mainPosts by remember { mutableStateOf<ApiListResponse>(ApiListResponse.Idle) }
     LaunchedEffect(Unit) {
         fetchMainPosts(
-            onSuccess = { mainPosts = it
-                        println(mainPosts)
-                        },
+            onSuccess = {
+                mainPosts = it
+                println(mainPosts)
+            },
             onError = {}
         )
     }

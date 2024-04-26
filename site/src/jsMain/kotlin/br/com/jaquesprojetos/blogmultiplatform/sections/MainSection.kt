@@ -5,6 +5,7 @@ import br.com.jaquesprojetos.blogmultiplatform.components.PostPreview
 import br.com.jaquesprojetos.blogmultiplatform.models.ApiListResponse
 import br.com.jaquesprojetos.blogmultiplatform.models.PostWithoutDetails
 import br.com.jaquesprojetos.blogmultiplatform.models.Theme
+import br.com.jaquesprojetos.blogmultiplatform.util.Constants.PAGE_WIDTH_EX
 import com.varabyte.kobweb.compose.foundation.layout.Box
 import com.varabyte.kobweb.compose.foundation.layout.Column
 import com.varabyte.kobweb.compose.foundation.layout.Row
@@ -32,7 +33,7 @@ fun MainSection(
         Box(
             modifier = Modifier
                 .fillMaxWidth()
-                .maxWidth(1920.px)
+                .maxWidth(PAGE_WIDTH_EX.px)
                 .backgroundColor(Theme.Secondary.rgb),
             contentAlignment = Alignment.Center,
         ) {
@@ -85,7 +86,9 @@ fun MainPosts(
                             vertical = false,
                             thumbnailHeight = 180.px,
                             modifier = Modifier
-                                .margin(bottom = 20.px),
+                                .margin(bottom = 20.px)
+
+                            ,
                             textMaxLines = 1
                         )
                     }

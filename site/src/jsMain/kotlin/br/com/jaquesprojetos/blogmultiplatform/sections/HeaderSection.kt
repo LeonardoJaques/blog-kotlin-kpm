@@ -7,10 +7,10 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import br.com.jaquesprojetos.blogmultiplatform.components.SearchBar
 import br.com.jaquesprojetos.blogmultiplatform.components.categoryNavigationItems
-
 import br.com.jaquesprojetos.blogmultiplatform.models.Theme
 import br.com.jaquesprojetos.blogmultiplatform.util.Constants.HEADER_HEIGHT
 import br.com.jaquesprojetos.blogmultiplatform.util.Constants.PAGE_WIDTH
+import br.com.jaquesprojetos.blogmultiplatform.util.Constants.PAGE_WIDTH_EX
 import br.com.jaquesprojetos.blogmultiplatform.util.Res
 import com.varabyte.kobweb.compose.css.Cursor
 import com.varabyte.kobweb.compose.foundation.layout.Box
@@ -24,6 +24,7 @@ import com.varabyte.kobweb.compose.ui.modifiers.cursor
 import com.varabyte.kobweb.compose.ui.modifiers.fillMaxWidth
 import com.varabyte.kobweb.compose.ui.modifiers.height
 import com.varabyte.kobweb.compose.ui.modifiers.margin
+import com.varabyte.kobweb.compose.ui.modifiers.maxWidth
 import com.varabyte.kobweb.compose.ui.modifiers.onClick
 import com.varabyte.kobweb.compose.ui.modifiers.width
 import com.varabyte.kobweb.silk.components.graphics.Image
@@ -50,7 +51,8 @@ fun HeaderSection(
         Box(
             modifier = Modifier
                 .backgroundColor(Theme.Secondary.rgb)
-                .fillMaxWidth(),
+                .fillMaxWidth()
+                .maxWidth(PAGE_WIDTH_EX.px),
             contentAlignment = Alignment.TopCenter
         ) {
             Header(

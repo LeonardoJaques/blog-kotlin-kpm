@@ -34,6 +34,7 @@ import com.varabyte.kobweb.compose.ui.modifiers.fontSize
 import com.varabyte.kobweb.compose.ui.modifiers.fontWeight
 import com.varabyte.kobweb.compose.ui.modifiers.height
 import com.varabyte.kobweb.compose.ui.modifiers.margin
+import com.varabyte.kobweb.compose.ui.modifiers.minWidth
 import com.varabyte.kobweb.compose.ui.modifiers.objectFit
 import com.varabyte.kobweb.compose.ui.modifiers.onClick
 import com.varabyte.kobweb.compose.ui.modifiers.overflow
@@ -155,6 +156,7 @@ fun PostContent(
             )
             .height(thumbnailHeight)
             .fillMaxWidth(if (vertical) 95.percent else 50.percent)
+            .minWidth(316.px)
             .objectFit(ObjectFit.Cover)
             .borderRadius(8.px),
         src = postDetails.thumbnail,

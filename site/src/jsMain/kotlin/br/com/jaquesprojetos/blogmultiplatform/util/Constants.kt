@@ -3,6 +3,7 @@ object Constants {
     const val FONT_FAMILY = "Roboto"
     const val SIDE_PANEL_WIDTH = 250
     const val PAGE_WIDTH = 100
+    const val PAGE_WIDTH_EX = 1920
     const val COLLAPSED_PANEL_HEIGHT = 100
     private const val API_KEY= "a83b069520da412c9dbfc531674a446b"
     const val HUMOR_API_URL =  "https://api.humorapi.com/jokes/random?api-key=${API_KEY}&max-length=180"
