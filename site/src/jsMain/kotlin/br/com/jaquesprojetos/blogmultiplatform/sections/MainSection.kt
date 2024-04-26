@@ -67,17 +67,16 @@ fun MainPosts(
             .margin(topBottom = 50.px),
     ) {
         when {
-                        breakpoint == Breakpoint.XL -> {
+            breakpoint == Breakpoint.XL -> {
                 PostPreview(
                     postDetails = posts.first(),
                     darkTheme = true,
                     vertical = true,
-                    thumbnailHeight = 595.px,
+                    thumbnailHeight = 600.px,
                 )
                 Column(
                     modifier = Modifier
                         .fillMaxWidth(50.percent)
-                        .margin(left = 50.px),
                 ) {
                     posts.drop(1).forEach { post ->
                         PostPreview(
@@ -86,14 +85,14 @@ fun MainPosts(
                             vertical = false,
                             thumbnailHeight = 180.px,
                             modifier = Modifier
-                                .margin(bottom = 20.px)
-
-                            ,
+                                .margin(bottom = 25.px)
+                                .fillMaxWidth(),
                             textMaxLines = 1
                         )
                     }
                 }
             }
+
             breakpoint >= Breakpoint.LG -> {
                 posts.take(2).forEach { post ->
                     PostPreview(
@@ -103,6 +102,7 @@ fun MainPosts(
                     )
                 }
             }
+
             breakpoint <= Breakpoint.MD -> {
                 posts.take(1).forEach { post ->
                     PostPreview(
@@ -110,9 +110,10 @@ fun MainPosts(
                         darkTheme = true,
                         vertical = true,
 
-                    )
+                        )
                 }
             }
+
             else -> {
                 posts.forEach { post ->
                     PostPreview(
@@ -120,7 +121,7 @@ fun MainPosts(
                         darkTheme = true,
                         vertical = true,
 
-                    )
+                        )
                 }
             }
         }
