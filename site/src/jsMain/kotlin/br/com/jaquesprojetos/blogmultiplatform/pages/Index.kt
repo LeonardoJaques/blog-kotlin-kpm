@@ -10,6 +10,7 @@ import br.com.jaquesprojetos.blogmultiplatform.components.OverflowSidePanel
 import br.com.jaquesprojetos.blogmultiplatform.components.categoryNavigationItems
 import br.com.jaquesprojetos.blogmultiplatform.models.ApiListResponse
 import br.com.jaquesprojetos.blogmultiplatform.sections.HeaderSection
+import br.com.jaquesprojetos.blogmultiplatform.sections.MainSection
 import br.com.jaquesprojetos.blogmultiplatform.util.fetchMainPosts
 import com.varabyte.kobweb.compose.foundation.layout.Arrangement
 import com.varabyte.kobweb.compose.foundation.layout.Column
@@ -46,13 +47,17 @@ fun HomePage() {
                     categoryNavigationItems(
                         onMenuOpen = { overflowMenuOpened = true },
                         vertical = true
-
                     )
                 }
             )
         }
         HeaderSection(
             breakpoint = breakpoint,
-            onMenuOpen = { overflowMenuOpened = true })
+            onMenuOpen = { overflowMenuOpened = true }
+        )
+        MainSection(
+            posts = mainPosts,
+            breakpoint = breakpoint
+        )
     }
 }
