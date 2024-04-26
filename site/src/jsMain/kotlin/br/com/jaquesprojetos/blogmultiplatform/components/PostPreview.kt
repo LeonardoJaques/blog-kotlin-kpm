@@ -238,7 +238,6 @@ fun Posts(
     showMoreVisibility: Boolean,
     onShowMore: () -> Unit,
     selectableMode: Boolean = false,
-    vertical: Boolean = true,
     onSelect: (String) -> Unit,
     onDeselect: (String) -> Unit,
 ) {

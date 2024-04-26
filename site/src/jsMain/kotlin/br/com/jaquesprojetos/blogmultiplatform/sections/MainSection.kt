@@ -64,7 +64,7 @@ fun MainPosts(
             .fillMaxWidth(
                 if (breakpoint > Breakpoint.MD) 80.percent else 90.percent
             )
-            .margin(topBottom = 50.px),
+            .margin(topBottom = 20.px),
     ) {
         when {
             breakpoint == Breakpoint.XL -> {
