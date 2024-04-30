@@ -9,7 +9,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import br.com.jaquesprojetos.blogmultiplatform.components.AdminPageLayout
-import br.com.jaquesprojetos.blogmultiplatform.components.Posts
+import br.com.jaquesprojetos.blogmultiplatform.components.PostsView
 import br.com.jaquesprojetos.blogmultiplatform.components.SearchBar
 import br.com.jaquesprojetos.blogmultiplatform.models.ApiListResponse
 import br.com.jaquesprojetos.blogmultiplatform.models.Constants.POSTS_PER_PAGE
@@ -235,7 +235,7 @@ fun MyPostsScreen() {
                     SpanText(text = "Delete")
                 }
             }
-            Posts(
+            PostsView(
                 post = myPosts,
                 breakpoint = breakpoint,
                 showMoreVisibility = shoMoreVisibility,
@@ -290,6 +290,10 @@ fun MyPostsScreen() {
                         }
 
                     }
+                },
+                onClick = {
+                    context.router.navigateTo(Screen.AdminCreate.passPostId(id = it))
+
                 }
             )
         }

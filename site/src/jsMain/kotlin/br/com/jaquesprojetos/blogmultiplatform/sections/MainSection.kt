@@ -23,6 +23,7 @@ import org.jetbrains.compose.web.css.px
 fun MainSection(
     posts: ApiListResponse,
     breakpoint: Breakpoint,
+    onClick: (String) -> Unit,
 ) {
     Box(
         modifier = Modifier
@@ -43,7 +44,11 @@ fun MainSection(
                 }
 
                 is ApiListResponse.Success -> {
-                    MainPosts(breakpoint = breakpoint, posts = posts.data)
+                    MainPosts(
+                        breakpoint = breakpoint,
+                        posts = posts.data,
+                        onClick = onClick
+                    )
                 }
 
                 is ApiListResponse.Error -> {
@@ -58,6 +63,7 @@ fun MainSection(
 fun MainPosts(
     posts: List<PostWithoutDetails>,
     breakpoint: Breakpoint,
+    onClick: (String) -> Unit,
 ) {
     Row(
         modifier = Modifier
@@ -72,22 +78,26 @@ fun MainPosts(
                     postDetails = posts.first(),
                     darkTheme = true,
                     vertical = true,
-                    thumbnailHeight = 600.px,
+                    thumbnailHeight = 595.px,
+                    onClick = onClick
+
                 )
                 Column(
                     modifier = Modifier
-                        .fillMaxWidth(50.percent)
+                        .fillMaxWidth(55.percent)
+                        .margin(left = 20.px),
                 ) {
                     posts.drop(1).forEach { post ->
                         PostPreview(
                             postDetails = post,
                             darkTheme = true,
                             vertical = false,
-                            thumbnailHeight = 180.px,
+                            thumbnailHeight = 175.px,
                             modifier = Modifier
                                 .margin(bottom = 25.px)
                                 .fillMaxWidth(),
-                            textMaxLines = 1
+                            titleMaxLines = 3,
+                            onClick = onClick
                         )
                     }
                 }
@@ -99,6 +109,7 @@ fun MainPosts(
                         postDetails = post,
                         darkTheme = true,
                         vertical = true,
+                        onClick = onClick
                     )
                 }
             }
@@ -109,8 +120,9 @@ fun MainPosts(
                         postDetails = post,
                         darkTheme = true,
                         vertical = true,
+                        onClick = onClick
 
-                        )
+                    )
                 }
             }
 
@@ -120,8 +132,8 @@ fun MainPosts(
                         postDetails = post,
                         darkTheme = true,
                         vertical = true,
-
-                        )
+                        onClick = onClick
+                    )
                 }
             }
         }

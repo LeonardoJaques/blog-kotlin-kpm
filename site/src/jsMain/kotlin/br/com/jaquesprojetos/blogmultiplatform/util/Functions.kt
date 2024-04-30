@@ -163,3 +163,8 @@ fun Long.parseDateString() = Date(this).toLocaleDateString()
 fun parseSwitchText(post: List<String>): String {
     return if (post.size == 1) "1 post selected" else "${post.size} posts selected"
 }
+
+fun validateEmail(email: String): Boolean {
+    val regex = "^[A-Za-z](.*)(@)(.+)(\\.)(.+)"
+    return regex.toRegex().matches(email)
+}

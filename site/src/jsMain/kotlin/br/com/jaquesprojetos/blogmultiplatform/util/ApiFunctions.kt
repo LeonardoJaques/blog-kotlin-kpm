@@ -6,6 +6,7 @@ import br.com.jaquesprojetos.blogmultiplatform.models.Constants.AUTHOR_PARAM
 import br.com.jaquesprojetos.blogmultiplatform.models.Constants.POST_ID_PARAM
 import br.com.jaquesprojetos.blogmultiplatform.models.Constants.QUERY_PARAM
 import br.com.jaquesprojetos.blogmultiplatform.models.Constants.SKIP_PARAM
+import br.com.jaquesprojetos.blogmultiplatform.models.Newsletter
 import br.com.jaquesprojetos.blogmultiplatform.models.Post
 import br.com.jaquesprojetos.blogmultiplatform.models.RandomJoke
 import br.com.jaquesprojetos.blogmultiplatform.models.User
@@ -132,6 +133,53 @@ suspend fun fetchMainPosts(
     }
 }
 
+suspend fun fetchLatestPosts(
+    skip: Int,
+    onSuccess: (ApiListResponse) -> Unit,
+    onError: (Exception) -> Unit,
+){
+    try {
+        val result = window.api.tryGet(
+            apiPath = "readlastetposts?${SKIP_PARAM}=$skip"
+        )?.decodeToString()
+        onSuccess(result.parseData())
+    } catch (e: Exception) {
+        println(e.message)
+        onError(e)
+    }
+}
+
+suspend fun fetchPopularPosts(
+    skip: Int,
+    onSuccess: (ApiListResponse) -> Unit,
+    onError: (Exception) -> Unit,
+){
+    try {
+        val result = window.api.tryGet(
+            apiPath = "readpopularposts?${SKIP_PARAM}=$skip"
+        )?.decodeToString()
+        onSuccess(result.parseData())
+    } catch (e: Exception) {
+        println(e.message)
+        onError(e)
+    }
+}
+
+suspend fun fetchSponsoredPosts(
+    onSuccess: (ApiListResponse) -> Unit,
+    onError: (Exception) -> Unit,
+){
+    try {
+        val result = window.api.tryGet(
+            apiPath = "readsponsoredposts"
+        )?.decodeToString()
+        onSuccess(result.parseData())
+    } catch (e: Exception) {
+        println(e.message)
+        onError(e)
+    }
+}
+
 suspend fun fetchMyPosts(
     skip: Int,
     onSuccess: (ApiListResponse) -> Unit,
@@ -186,6 +234,13 @@ suspend fun fetchSelectedPost(id: String): ApiResponse {
         println(e)
         ApiResponse.Error(message = e.message.toString())
     }
+}
+
+suspend fun subscribeToNewsletter(newsletter: Newsletter): String {
+    return window.api.tryPost(
+        apiPath = "subscribe",
+        body = Json.encodeToString(newsletter).encodeToByteArray()
+    )?.decodeToString().toString().replace("\"", "")
 }
 
 inline fun <reified T> String?.parseData(): T {
