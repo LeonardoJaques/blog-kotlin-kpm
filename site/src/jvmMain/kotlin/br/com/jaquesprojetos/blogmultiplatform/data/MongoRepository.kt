@@ -1,5 +1,6 @@
 package br.com.jaquesprojetos.blogmultiplatform.data
 
+import br.com.jaquesprojetos.blogmultiplatform.models.Category
 import br.com.jaquesprojetos.blogmultiplatform.models.Newsletter
 import br.com.jaquesprojetos.blogmultiplatform.models.Post
 import br.com.jaquesprojetos.blogmultiplatform.models.PostWithoutDetails
@@ -16,7 +17,9 @@ interface MongoRepository {
     suspend fun deleteSelectedPost(ids: List<String>): Boolean
     suspend fun readSelectedPost(id: String): Post
     suspend fun searchPostByTitle(query: String, skip: Int): List<PostWithoutDetails>
+    suspend fun searchPostByCategory(category: Category, skip: Int): List<PostWithoutDetails>
     suspend fun checkUserExistence(user: User): User?
+
     suspend fun checkUserId(id: String): Boolean
     suspend fun subscribe(newsletter: Newsletter): String
 

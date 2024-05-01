@@ -42,7 +42,6 @@ fun MainSection(
                 is ApiListResponse.Idle -> {
                     // Loading
                 }
-
                 is ApiListResponse.Success -> {
                     MainPosts(
                         breakpoint = breakpoint,
@@ -50,7 +49,6 @@ fun MainSection(
                         onClick = onClick
                     )
                 }
-
                 is ApiListResponse.Error -> {
                     // Error
                 }
@@ -80,7 +78,6 @@ fun MainPosts(
                     vertical = true,
                     thumbnailHeight = 595.px,
                     onClick = onClick
-
                 )
                 Column(
                     modifier = Modifier
@@ -102,7 +99,6 @@ fun MainPosts(
                     }
                 }
             }
-
             breakpoint >= Breakpoint.LG -> {
                 posts.take(2).forEach { post ->
                     PostPreview(
@@ -113,7 +109,6 @@ fun MainPosts(
                     )
                 }
             }
-
             breakpoint <= Breakpoint.MD -> {
                 posts.take(1).forEach { post ->
                     PostPreview(
@@ -125,7 +120,6 @@ fun MainPosts(
                     )
                 }
             }
-
             else -> {
                 posts.forEach { post ->
                     PostPreview(

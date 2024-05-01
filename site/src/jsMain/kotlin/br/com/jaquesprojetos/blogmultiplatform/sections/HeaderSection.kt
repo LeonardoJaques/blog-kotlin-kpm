@@ -7,10 +7,12 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import br.com.jaquesprojetos.blogmultiplatform.components.SearchBar
 import br.com.jaquesprojetos.blogmultiplatform.components.categoryNavigationItems
+import br.com.jaquesprojetos.blogmultiplatform.models.Category
 import br.com.jaquesprojetos.blogmultiplatform.models.Theme
+import br.com.jaquesprojetos.blogmultiplatform.navigation.Screen
 import br.com.jaquesprojetos.blogmultiplatform.util.Constants.HEADER_HEIGHT
-import br.com.jaquesprojetos.blogmultiplatform.util.Constants.PAGE_WIDTH
 import br.com.jaquesprojetos.blogmultiplatform.util.Constants.PAGE_WIDTH_EX
+import br.com.jaquesprojetos.blogmultiplatform.util.Id
 import br.com.jaquesprojetos.blogmultiplatform.util.Res
 import com.varabyte.kobweb.compose.css.Cursor
 import com.varabyte.kobweb.compose.foundation.layout.Box
@@ -27,25 +29,31 @@ import com.varabyte.kobweb.compose.ui.modifiers.margin
 import com.varabyte.kobweb.compose.ui.modifiers.maxWidth
 import com.varabyte.kobweb.compose.ui.modifiers.onClick
 import com.varabyte.kobweb.compose.ui.modifiers.width
+import com.varabyte.kobweb.core.rememberPageContext
 import com.varabyte.kobweb.silk.components.graphics.Image
 import com.varabyte.kobweb.silk.components.icons.fa.FaBars
 import com.varabyte.kobweb.silk.components.icons.fa.FaXmark
 import com.varabyte.kobweb.silk.components.icons.fa.IconSize
 import com.varabyte.kobweb.silk.components.style.breakpoint.Breakpoint
+import kotlinx.browser.document
 import org.jetbrains.compose.web.css.percent
 import org.jetbrains.compose.web.css.px
-import org.jetbrains.compose.web.css.vw
+import org.w3c.dom.HTMLInputElement
 
 @Composable
 fun HeaderSection(
     breakpoint: Breakpoint,
     onMenuOpen: () -> Unit,
-) {
+    logo: String = Res.Image.logoHome,
+    selectedCategory: Category? = null,
+
+    ) {
     Box(
         modifier = Modifier
             .fillMaxWidth()
-            .width(PAGE_WIDTH.vw)
             .backgroundColor(Theme.Secondary.rgb),
+
+
         contentAlignment = Alignment.Center
     ) {
         Box(
@@ -57,8 +65,11 @@ fun HeaderSection(
         ) {
             Header(
                 breakpoint = breakpoint,
-                onMenuOpen = onMenuOpen
-            )
+                onMenuOpen = onMenuOpen,
+                logo = logo,
+                selectedCategory = selectedCategory,
+
+                )
         }
     }
 }
@@ -67,8 +78,12 @@ fun HeaderSection(
 fun Header(
     breakpoint: Breakpoint,
     onMenuOpen: () -> Unit,
+    logo: String,
+
+    selectedCategory: Category? = null,
 ) {
     var fullSearchBarOpened by remember { mutableStateOf(false) }
+    val context = rememberPageContext()
     Row(
         modifier = Modifier
             .fillMaxWidth(if (breakpoint > Breakpoint.MD) 80.percent else 90.percent)
@@ -104,24 +119,35 @@ fun Header(
         if (!fullSearchBarOpened) {
             Image(
                 modifier = Modifier
-                    .margin(right = 50.px)
+                    .margin(left = 10.px, right = 50.px)
                     .width(if (breakpoint >= Breakpoint.SM) 100.px else 70.px)
                     .cursor(Cursor.Pointer)
-                    .onClick { },
-                src = Res.Image.logoHome,
+                    .onClick {
+                        context.router.navigateTo(Screen.HomePage.route)
+                    },
+                src = logo,
                 description = "Logo Image"
             )
         }
 
         if (breakpoint >= Breakpoint.LG) {
-            categoryNavigationItems(onMenuOpen)
+            categoryNavigationItems(
+                onMenuOpen = onMenuOpen,
+                selectedCategory = selectedCategory,
+            )
         }
         Spacer()
         SearchBar(
             fullWidth = fullSearchBarOpened,
             breakpoint = breakpoint,
             darkTheme = true,
-            onEnterClick = {},
+            onEnterClick = {
+                val query =
+                    (document.getElementById(
+                        Id.adminSearchBar
+                    ) as HTMLInputElement).value
+                context.router.navigateTo(Screen.SearchPage.searchByTitle(query = query))
+            },
             onSearchIconClick = {
                 fullSearchBarOpened = it
             }

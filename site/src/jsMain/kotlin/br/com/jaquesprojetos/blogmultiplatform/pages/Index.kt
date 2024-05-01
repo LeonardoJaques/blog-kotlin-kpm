@@ -109,7 +109,6 @@ fun HomePage() {
             onClick = {}
 
         )
-
         PostsSection(
             breakpoint = breakpoint,
             posts = latestPosts,

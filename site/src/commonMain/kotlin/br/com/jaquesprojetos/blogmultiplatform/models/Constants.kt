@@ -7,4 +7,6 @@ object Constants {
     const val SKIP_PARAM = "skip"
     const val AUTHOR_PARAM = "author"
     const val UPDATE_PARAM = "update"
+    const val CATEGORY_PARAM = "category"
+
 }

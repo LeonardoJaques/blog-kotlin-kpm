@@ -2,7 +2,9 @@ package br.com.jaquesprojetos.blogmultiplatform.util
 
 import br.com.jaquesprojetos.blogmultiplatform.models.ApiListResponse
 import br.com.jaquesprojetos.blogmultiplatform.models.ApiResponse
+import br.com.jaquesprojetos.blogmultiplatform.models.Category
 import br.com.jaquesprojetos.blogmultiplatform.models.Constants.AUTHOR_PARAM
+import br.com.jaquesprojetos.blogmultiplatform.models.Constants.CATEGORY_PARAM
 import br.com.jaquesprojetos.blogmultiplatform.models.Constants.POST_ID_PARAM
 import br.com.jaquesprojetos.blogmultiplatform.models.Constants.QUERY_PARAM
 import br.com.jaquesprojetos.blogmultiplatform.models.Constants.SKIP_PARAM
@@ -220,6 +222,24 @@ suspend fun searchPostByTitle(
         )?.decodeToString()
         onSuccess(result.parseData())
     } catch (e: Exception) {
+        println(e.message)
+        onError(e)
+    }
+}
+
+suspend fun searchPostsByCategory(
+    category: Category,
+    skip: Int,
+    onSuccess: (ApiListResponse) -> Unit,
+    onError: (Exception) -> Unit,
+) {
+    return try {
+        val result = window.api.tryGet(
+            apiPath = "searchpostbycategory?${CATEGORY_PARAM}=${category.name}&${SKIP_PARAM}=$skip",
+        )?.decodeToString()
+        onSuccess(result.parseData())
+    } catch (e: Exception) {
+        println(e.message)
         onError(e)
     }
 }

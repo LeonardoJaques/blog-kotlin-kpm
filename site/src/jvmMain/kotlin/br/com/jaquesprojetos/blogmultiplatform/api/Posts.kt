@@ -3,7 +3,9 @@ package br.com.jaquesprojetos.blogmultiplatform.api
 import br.com.jaquesprojetos.blogmultiplatform.data.MongoDB
 import br.com.jaquesprojetos.blogmultiplatform.models.ApiListResponse
 import br.com.jaquesprojetos.blogmultiplatform.models.ApiResponse
+import br.com.jaquesprojetos.blogmultiplatform.models.Category
 import br.com.jaquesprojetos.blogmultiplatform.models.Constants.AUTHOR_PARAM
+import br.com.jaquesprojetos.blogmultiplatform.models.Constants.CATEGORY_PARAM
 import br.com.jaquesprojetos.blogmultiplatform.models.Constants.POST_ID_PARAM
 import br.com.jaquesprojetos.blogmultiplatform.models.Constants.QUERY_PARAM
 import br.com.jaquesprojetos.blogmultiplatform.models.Constants.SKIP_PARAM
@@ -67,16 +69,18 @@ suspend fun readMainPosts(context: ApiContext) {
         context.res.setBody(ApiListResponse.Error(message = e.message.toString()))
     }
 }
+
 @Api(routeOverride = "readlastetposts")
 suspend fun readLatestPosts(context: ApiContext) {
     try {
         val skip = context.req.params[SKIP_PARAM]?.toInt() ?: 0
-        val latestPosts = context.data.getValue<MongoDB>().readLatestPosts(skip =  skip)
+        val latestPosts = context.data.getValue<MongoDB>().readLatestPosts(skip = skip)
         context.res.setBody(ApiListResponse.Success(data = latestPosts))
     } catch (e: Exception) {
         context.res.setBody(ApiListResponse.Error(message = e.message.toString()))
     }
 }
+
 @Api(routeOverride = "readsponsoredposts")
 suspend fun readSponsoredPosts(context: ApiContext) {
     try {
@@ -91,7 +95,7 @@ suspend fun readSponsoredPosts(context: ApiContext) {
 suspend fun readPopularPosts(context: ApiContext) {
     try {
         val skip = context.req.params[SKIP_PARAM]?.toInt() ?: 0
-        val popularPosts = context.data.getValue<MongoDB>().readPopularPosts(skip =  skip)
+        val popularPosts = context.data.getValue<MongoDB>().readPopularPosts(skip = skip)
         context.res.setBody(ApiListResponse.Success(data = popularPosts))
     } catch (e: Exception) {
         context.res.setBody(ApiListResponse.Error(message = e.message.toString()))
@@ -130,6 +134,24 @@ suspend fun searchPostByTitle(context: ApiContext) {
     }
 }
 
+@Api(routeOverride = "searchpostbycategory")
+suspend fun searchPostByCategory(context: ApiContext) {
+    try {
+        val category =
+            Category.valueOf(context.req.params[CATEGORY_PARAM] ?: Category.Programming.name)
+        val skip = context.req.params[SKIP_PARAM]?.toInt() ?: 0
+        val request = context.data.getValue<MongoDB>()
+            .searchPostByCategory(
+                category = category,
+                skip = skip
+            )
+        context.res.setBody(ApiListResponse.Success(data = request))
+    } catch (e: Exception) {
+        context.res.setBody(ApiListResponse.Error(message = e.message.toString()))
+    }
+}
+
+
 @Api(routeOverride = "deleteselectedposts")
 suspend fun deleteSelectedPosts(context: ApiContext) = try {
     val request = context.req.getBody<List<String>>()
@@ -164,7 +186,6 @@ suspend fun readSelectedPost(context: ApiContext) {
         context.res.setBody(ApiResponse.Error(message = "Post not found"))
     }
 }
-
 
 
 inline fun <reified T> Response.setBody(data: T) {

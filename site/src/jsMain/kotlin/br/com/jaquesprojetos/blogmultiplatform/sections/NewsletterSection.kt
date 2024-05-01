@@ -81,7 +81,7 @@ fun NewsletterSection(breakpoint: Breakpoint) {
 
     Box(
         modifier = Modifier
-            .margin(topBottom = 250.px)
+            .margin(topBottom = 50.px)
             .fillMaxWidth()
             .maxWidth(PAGE_WIDTH_EX.px)
     ) {

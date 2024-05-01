@@ -29,8 +29,11 @@ kobweb {
                     href = "https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/css/bootstrap.min.css"
                 }
 
+                link(rel = "stylesheet", href = "/fonts/faces.css")
+
                 script {
-                    src = "https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.2.0/highlight.min.js"
+                    src =
+                        "https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.2.0/highlight.min.js"
                 }
                 link {
                     rel = "stylesheet"
@@ -54,6 +57,7 @@ kotlin {
         commonMain.dependencies {
             implementation(compose.runtime)
             implementation(libs.kotlinx.serialization)
+
         }
 
         jsMain.dependencies {

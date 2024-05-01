@@ -1,6 +1,8 @@
 package br.com.jaquesprojetos.blogmultiplatform.util
+
+
 object Constants {
-    const val FONT_FAMILY = "Roboto"
+    const val FONT_FAMILY = Res.FontFamily.Roboto.regular
     const val SIDE_PANEL_WIDTH = 250
     const val PAGE_WIDTH = 100
     const val PAGE_WIDTH_EX = 1920
@@ -8,8 +10,6 @@ object Constants {
     private const val API_KEY= "a83b069520da412c9dbfc531674a446b"
     const val HUMOR_API_URL =  "https://api.humorapi.com/jokes/random?api-key=${API_KEY}&max-length=180"
     const val HEADER_HEIGHT = 100
-
-
 
 }
 

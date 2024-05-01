@@ -1,5 +1,6 @@
 package br.com.jaquesprojetos.blogmultiplatform.data
 
+import br.com.jaquesprojetos.blogmultiplatform.models.Category
 import br.com.jaquesprojetos.blogmultiplatform.models.Constants.POSTS_PER_PAGE
 import br.com.jaquesprojetos.blogmultiplatform.models.Newsletter
 import br.com.jaquesprojetos.blogmultiplatform.models.Post
@@ -134,6 +135,18 @@ class MongoDB(private val context: InitApiContext) : MongoRepository {
         val regexQuery = query.toRegex(RegexOption.IGNORE_CASE)
         return postCollection.withDocumentClass(PostWithoutDetails::class.java)
             .find(Filters.regex(PostWithoutDetails::title.name, regexQuery.pattern))
+            .sort(descending(PostWithoutDetails::date.name))
+            .skip(skip)
+            .limit(POSTS_PER_PAGE)
+            .toList()
+    }
+
+    override suspend fun searchPostByCategory(
+        category: Category,
+        skip: Int,
+    ): List<PostWithoutDetails> {
+        return postCollection.withDocumentClass(PostWithoutDetails::class.java)
+            .find(Filters.eq(PostWithoutDetails::category.name, category))
             .sort(descending(PostWithoutDetails::date.name))
             .skip(skip)
             .limit(POSTS_PER_PAGE)
