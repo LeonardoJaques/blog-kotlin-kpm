@@ -49,7 +49,7 @@ fun FooterSection() {
                     .fontWeight(
                         FontWeight.Medium
                     ),
-                text = "Jaques Projects",
+                text = "Jaques Projetos",
             )
         }
     }

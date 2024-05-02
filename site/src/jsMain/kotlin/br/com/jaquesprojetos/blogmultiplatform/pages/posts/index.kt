@@ -33,7 +33,6 @@ import com.varabyte.kobweb.compose.ui.modifiers.fillMaxSize
 import com.varabyte.kobweb.compose.ui.modifiers.fillMaxWidth
 import com.varabyte.kobweb.compose.ui.modifiers.fontFamily
 import com.varabyte.kobweb.compose.ui.modifiers.fontSize
-import com.varabyte.kobweb.compose.ui.modifiers.height
 import com.varabyte.kobweb.compose.ui.modifiers.id
 import com.varabyte.kobweb.compose.ui.modifiers.margin
 import com.varabyte.kobweb.compose.ui.modifiers.maxWidth
@@ -156,8 +155,7 @@ fun PostContent(post: Post) {
         )
         Image(
             modifier = Modifier
-                .fillMaxWidth()
-                .height(600.px)
+                .fillMaxSize()
                 .borderRadius(8.px)
                 .margin(bottom = 40.px),
 
