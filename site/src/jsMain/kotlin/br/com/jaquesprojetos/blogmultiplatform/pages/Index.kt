@@ -14,6 +14,7 @@ import br.com.jaquesprojetos.blogmultiplatform.models.ApiListResponse
 import br.com.jaquesprojetos.blogmultiplatform.models.Constants.POSTS_PER_PAGE
 import br.com.jaquesprojetos.blogmultiplatform.models.PostWithoutDetails
 import br.com.jaquesprojetos.blogmultiplatform.navigation.Screen
+import br.com.jaquesprojetos.blogmultiplatform.sections.FooterSection
 import br.com.jaquesprojetos.blogmultiplatform.sections.HeaderSection
 import br.com.jaquesprojetos.blogmultiplatform.sections.MainSection
 import br.com.jaquesprojetos.blogmultiplatform.sections.NewsletterSection
@@ -185,5 +186,6 @@ fun HomePage() {
         NewsletterSection(
             breakpoint = breakpoint
         )
+        FooterSection()
     }
 }

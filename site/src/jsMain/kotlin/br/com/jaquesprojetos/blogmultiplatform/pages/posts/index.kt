@@ -15,6 +15,7 @@ import br.com.jaquesprojetos.blogmultiplatform.models.ApiResponse
 import br.com.jaquesprojetos.blogmultiplatform.models.Constants.POST_ID_PARAM
 import br.com.jaquesprojetos.blogmultiplatform.models.Post
 import br.com.jaquesprojetos.blogmultiplatform.models.Theme
+import br.com.jaquesprojetos.blogmultiplatform.sections.FooterSection
 import br.com.jaquesprojetos.blogmultiplatform.sections.HeaderSection
 import br.com.jaquesprojetos.blogmultiplatform.util.Constants.FONT_FAMILY
 import br.com.jaquesprojetos.blogmultiplatform.util.Id
@@ -36,6 +37,7 @@ import com.varabyte.kobweb.compose.ui.modifiers.height
 import com.varabyte.kobweb.compose.ui.modifiers.id
 import com.varabyte.kobweb.compose.ui.modifiers.margin
 import com.varabyte.kobweb.compose.ui.modifiers.maxWidth
+import com.varabyte.kobweb.compose.ui.modifiers.padding
 import com.varabyte.kobweb.compose.ui.modifiers.textOverflow
 import com.varabyte.kobweb.compose.ui.styleModifier
 import com.varabyte.kobweb.compose.ui.toAttrs
@@ -109,9 +111,9 @@ fun PostsPage() {
             is ApiResponse.Error -> {
                 val responseMessage = (apiResponse as ApiResponse.Error).message
                 ErrorView(message = responseMessage)
-
             }
         }
+        FooterSection()
     }
 }
 
@@ -123,7 +125,8 @@ fun PostContent(post: Post) {
     Column(
         modifier = Modifier
             .fillMaxWidth()
-            .margin(top = 50.px, bottom = 100.px)
+            .margin(top = 50.px, bottom = 200.px)
+            .padding(leftRight = 24.px)
             .maxWidth(800.px),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {

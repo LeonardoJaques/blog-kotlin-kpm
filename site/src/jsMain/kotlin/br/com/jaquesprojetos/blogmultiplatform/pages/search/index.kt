@@ -18,6 +18,7 @@ import br.com.jaquesprojetos.blogmultiplatform.models.Constants.POSTS_PER_PAGE
 import br.com.jaquesprojetos.blogmultiplatform.models.Constants.QUERY_PARAM
 import br.com.jaquesprojetos.blogmultiplatform.models.PostWithoutDetails
 import br.com.jaquesprojetos.blogmultiplatform.navigation.Screen
+import br.com.jaquesprojetos.blogmultiplatform.sections.FooterSection
 import br.com.jaquesprojetos.blogmultiplatform.sections.HeaderSection
 import br.com.jaquesprojetos.blogmultiplatform.sections.PostsSection
 import br.com.jaquesprojetos.blogmultiplatform.util.Constants.FONT_FAMILY
@@ -213,5 +214,6 @@ fun SearchPage() {
         } else{
             LoadingIndicator()
         }
+        FooterSection()
     }
 }
