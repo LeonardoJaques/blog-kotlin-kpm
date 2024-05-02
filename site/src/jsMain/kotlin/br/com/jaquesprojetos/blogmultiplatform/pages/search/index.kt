@@ -17,6 +17,7 @@ import br.com.jaquesprojetos.blogmultiplatform.models.Constants.CATEGORY_PARAM
 import br.com.jaquesprojetos.blogmultiplatform.models.Constants.POSTS_PER_PAGE
 import br.com.jaquesprojetos.blogmultiplatform.models.Constants.QUERY_PARAM
 import br.com.jaquesprojetos.blogmultiplatform.models.PostWithoutDetails
+import br.com.jaquesprojetos.blogmultiplatform.navigation.Screen
 import br.com.jaquesprojetos.blogmultiplatform.sections.HeaderSection
 import br.com.jaquesprojetos.blogmultiplatform.sections.PostsSection
 import br.com.jaquesprojetos.blogmultiplatform.util.Constants.FONT_FAMILY
@@ -74,7 +75,6 @@ fun SearchPage() {
             ""
         }
     }
-
     LaunchedEffect(key1 = context.route) {
         (document.getElementById(Id.adminSearchBar) as HTMLInputElement).value = ""
         showMorePosts = false
@@ -203,13 +203,12 @@ fun SearchPage() {
                                 },
                                 onError = {}
                             )
-
-
                         }
                     }
                 },
-                onClick = {}
-
+                onClick = {
+                    context.router.navigateTo(Screen.PostPage.getPost(id = it))
+                }
             )
         } else{
             LoadingIndicator()

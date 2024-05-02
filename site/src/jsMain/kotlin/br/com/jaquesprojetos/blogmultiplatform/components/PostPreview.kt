@@ -7,6 +7,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import br.com.jaquesprojetos.blogmultiplatform.models.PostWithoutDetails
 import br.com.jaquesprojetos.blogmultiplatform.models.Theme
+import br.com.jaquesprojetos.blogmultiplatform.styles.PostPreViewStyle
 import br.com.jaquesprojetos.blogmultiplatform.util.Constants.FONT_FAMILY
 import br.com.jaquesprojetos.blogmultiplatform.util.parseDateString
 import com.varabyte.kobweb.compose.css.CSSTransition
@@ -43,6 +44,7 @@ import com.varabyte.kobweb.compose.ui.styleModifier
 import com.varabyte.kobweb.compose.ui.thenIf
 import com.varabyte.kobweb.compose.ui.toAttrs
 import com.varabyte.kobweb.silk.components.graphics.Image
+import com.varabyte.kobweb.silk.components.style.toModifier
 import com.varabyte.kobweb.silk.components.text.SpanText
 import org.jetbrains.compose.web.css.CSSColorValue
 import org.jetbrains.compose.web.css.CSSSizeValue
@@ -62,7 +64,7 @@ fun PostPreview(
     vertical: Boolean = true,
     onSelect: (String) -> Unit = {},
     onDeselect: (String) -> Unit = {},
-    onClick: (String) -> Unit,
+    onClick: (String) -> Unit={},
     thumbnailHeight: CSSSizeValue<CSSUnit.px> = 320.px,
     modifier: Modifier = Modifier,
     titleMaxLines: Int = 2,
@@ -72,7 +74,8 @@ fun PostPreview(
     var checked by remember(selectableMode) { mutableStateOf(false) }
     if (vertical) {
         Column(
-            modifier = modifier
+            modifier = PostPreViewStyle.toModifier()
+                .then(modifier)
                 .margin(bottom = 24.px, leftRight = 8.px)
                 .fillMaxWidth(
                     if (darkTheme) 100.percent
@@ -117,7 +120,8 @@ fun PostPreview(
 
     } else {
         Row(
-            modifier = modifier
+            modifier = PostPreViewStyle.toModifier()
+                .then(modifier)
                 .cursor(Cursor.Pointer)
                 .onClick { onClick(postDetails._id) }
             ,

@@ -107,7 +107,7 @@ fun HomeContent(randomJoke: RandomJoke?) {
                             .size(150.px)
                             .margin(bottom = 50.px),
                         src = Res.Image.lagth,
-                        description = "Lagth Image",
+                        description = "Lath Image",
                     )
                 }
                 if (randomJoke.joke.contains("Q:")) {

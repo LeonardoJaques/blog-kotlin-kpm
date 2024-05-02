@@ -20,14 +20,14 @@ fun PostsSection(
     title: String? = null,
     showMoreVisibility: Boolean,
     onShowMore: () -> Unit,
-    onClick: (String) -> Unit
+    onClick: (String) -> Unit,
 ) {
     Box(
         modifier = Modifier
             .fillMaxWidth()
             .maxWidth(PAGE_WIDTH_EX.px).margin(topBottom = 50.px),
         contentAlignment = Alignment.Center
-    ){
+    ) {
         PostsView(
             breakpoint = breakpoint,
             title = title,
@@ -35,7 +35,6 @@ fun PostsSection(
             showMoreVisibility = showMoreVisibility,
             onShowMore = onShowMore,
             onClick = onClick
-
         )
     }
 

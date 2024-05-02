@@ -13,11 +13,13 @@ import br.com.jaquesprojetos.blogmultiplatform.components.categoryNavigationItem
 import br.com.jaquesprojetos.blogmultiplatform.models.ApiListResponse
 import br.com.jaquesprojetos.blogmultiplatform.models.Constants.POSTS_PER_PAGE
 import br.com.jaquesprojetos.blogmultiplatform.models.PostWithoutDetails
+import br.com.jaquesprojetos.blogmultiplatform.navigation.Screen
 import br.com.jaquesprojetos.blogmultiplatform.sections.HeaderSection
 import br.com.jaquesprojetos.blogmultiplatform.sections.MainSection
 import br.com.jaquesprojetos.blogmultiplatform.sections.NewsletterSection
 import br.com.jaquesprojetos.blogmultiplatform.sections.PostsSection
 import br.com.jaquesprojetos.blogmultiplatform.sections.SponsoredSection
+import br.com.jaquesprojetos.blogmultiplatform.util.Res.Image.logo
 import br.com.jaquesprojetos.blogmultiplatform.util.fetchLatestPosts
 import br.com.jaquesprojetos.blogmultiplatform.util.fetchMainPosts
 import br.com.jaquesprojetos.blogmultiplatform.util.fetchPopularPosts
@@ -28,6 +30,7 @@ import com.varabyte.kobweb.compose.ui.Alignment
 import com.varabyte.kobweb.compose.ui.Modifier
 import com.varabyte.kobweb.compose.ui.modifiers.fillMaxSize
 import com.varabyte.kobweb.core.Page
+import com.varabyte.kobweb.core.rememberPageContext
 import com.varabyte.kobweb.silk.theme.breakpoint.rememberBreakpoint
 import kotlinx.coroutines.launch
 
@@ -36,15 +39,21 @@ import kotlinx.coroutines.launch
 fun HomePage() {
     val scope = rememberCoroutineScope()
     val breakpoint = rememberBreakpoint()
-    var overflowMenuOpened by remember { mutableStateOf(false) }
-    var mainPosts by remember { mutableStateOf<ApiListResponse>(ApiListResponse.Idle) }
+    val context = rememberPageContext()
+
     val latestPosts = remember { mutableStateListOf<PostWithoutDetails>() }
     val sponsoredPosts = remember { mutableStateListOf<PostWithoutDetails>() }
     val popularPosts = remember { mutableStateListOf<PostWithoutDetails>() }
+
+    var mainPosts by remember { mutableStateOf<ApiListResponse>(ApiListResponse.Idle) }
+
     var popularPostsToSkip by remember { mutableStateOf(0) }
     var latestPostsToSkip by remember { mutableStateOf(0) }
+
+    var overflowMenuOpened by remember { mutableStateOf(false) }
     var showMoreLatestPosts by remember { mutableStateOf(false) }
     var showMorePopularPosts by remember { mutableStateOf(false) }
+
     LaunchedEffect(Unit) {
         fetchMainPosts(
             onSuccess = { mainPosts = it },
@@ -101,12 +110,13 @@ fun HomePage() {
         }
         HeaderSection(
             breakpoint = breakpoint,
-            onMenuOpen = { overflowMenuOpened = true }
+            onMenuOpen = { overflowMenuOpened = true },
+            logo = logo,
         )
         MainSection(
             posts = mainPosts,
             breakpoint = breakpoint,
-            onClick = {}
+            onClick = { context.router.navigateTo(Screen.PostPage.getPost(id = it)) }
 
         )
         PostsSection(
@@ -135,13 +145,13 @@ fun HomePage() {
                     )
                 }
             },
-            onClick = {}
+            onClick = { context.router.navigateTo(Screen.PostPage.getPost(id = it)) }
         )
 
         SponsoredSection(
             breakpoint = breakpoint,
             posts = sponsoredPosts,
-            onClick = {}
+            onClick = { context.router.navigateTo(Screen.PostPage.getPost(id = it)) }
         )
 
         PostsSection(
@@ -170,7 +180,7 @@ fun HomePage() {
                     )
                 }
             },
-            onClick = {}
+            onClick = { context.router.navigateTo(Screen.PostPage.getPost(id = it)) }
         )
         NewsletterSection(
             breakpoint = breakpoint

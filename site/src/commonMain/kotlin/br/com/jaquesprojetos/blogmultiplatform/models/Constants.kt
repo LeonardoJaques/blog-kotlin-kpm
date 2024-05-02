@@ -8,5 +8,4 @@ object Constants {
     const val AUTHOR_PARAM = "author"
     const val UPDATE_PARAM = "update"
     const val CATEGORY_PARAM = "category"
-
 }

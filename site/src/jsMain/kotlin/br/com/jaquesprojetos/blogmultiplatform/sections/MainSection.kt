@@ -1,6 +1,7 @@
 package br.com.jaquesprojetos.blogmultiplatform.sections
 
 import androidx.compose.runtime.Composable
+import br.com.jaquesprojetos.blogmultiplatform.components.LoadingIndicator
 import br.com.jaquesprojetos.blogmultiplatform.components.PostPreview
 import br.com.jaquesprojetos.blogmultiplatform.models.ApiListResponse
 import br.com.jaquesprojetos.blogmultiplatform.models.PostWithoutDetails
@@ -40,8 +41,9 @@ fun MainSection(
         ) {
             when (posts) {
                 is ApiListResponse.Idle -> {
-                    // Loading
+                    LoadingIndicator()
                 }
+
                 is ApiListResponse.Success -> {
                     MainPosts(
                         breakpoint = breakpoint,
@@ -49,6 +51,7 @@ fun MainSection(
                         onClick = onClick
                     )
                 }
+
                 is ApiListResponse.Error -> {
                     // Error
                 }
@@ -77,16 +80,17 @@ fun MainPosts(
                     darkTheme = true,
                     vertical = true,
                     thumbnailHeight = 595.px,
-                    onClick = onClick
+                    onClick = { onClick(posts.first()._id) }
+
                 )
                 Column(
                     modifier = Modifier
                         .fillMaxWidth(55.percent)
                         .margin(left = 20.px),
                 ) {
-                    posts.drop(1).forEach { post ->
+                    posts.drop(1).forEach { postDetails ->
                         PostPreview(
-                            postDetails = post,
+                            postDetails = postDetails,
                             darkTheme = true,
                             vertical = false,
                             thumbnailHeight = 175.px,
@@ -94,39 +98,42 @@ fun MainPosts(
                                 .margin(bottom = 25.px)
                                 .fillMaxWidth(),
                             titleMaxLines = 3,
-                            onClick = onClick
+                            onClick = { onClick(postDetails._id) }
                         )
                     }
                 }
             }
+
             breakpoint >= Breakpoint.LG -> {
-                posts.take(2).forEach { post ->
+                posts.take(2).forEach { postDetails ->
                     PostPreview(
-                        postDetails = post,
+                        postDetails = postDetails,
                         darkTheme = true,
                         vertical = true,
-                        onClick = onClick
+                        onClick = { onClick(postDetails._id)}
                     )
                 }
             }
+
             breakpoint <= Breakpoint.MD -> {
-                posts.take(1).forEach { post ->
+                posts.take(1).forEach { postDetails ->
                     PostPreview(
-                        postDetails = post,
+                        postDetails = postDetails,
                         darkTheme = true,
                         vertical = true,
-                        onClick = onClick
+                        onClick = { onClick(postDetails._id)}
 
                     )
                 }
             }
+
             else -> {
-                posts.forEach { post ->
+                posts.forEach { postDetails ->
                     PostPreview(
-                        postDetails = post,
+                        postDetails = postDetails,
                         darkTheme = true,
                         vertical = true,
-                        onClick = onClick
+                        onClick = { onClick(postDetails._id)}
                     )
                 }
             }
