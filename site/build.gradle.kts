@@ -8,6 +8,8 @@ plugins {
     alias(libs.plugins.jetbrains.compose)
     alias(libs.plugins.serialization.plugin)
     alias(libs.plugins.kobweb.application)
+    alias(libs.plugins.android.application) apply false
+    alias(libs.plugins.jetbrains.kotlin.android) apply false
 
 //    alias(libs.plugins.kobwebx.markdown)
 }
