@@ -91,10 +91,14 @@ class AutheliaOidc(
             } finally {
                 connection.autoCommit = true
             }
-        } ?: return null
+        } ?: throw OidcCallbackFailure("state")
 
-        val metadata = discovery()
-        val basic = Base64.getEncoder().encodeToString("${clientId!!}:${clientSecret!!}".toByteArray())
+        val metadata = try {
+            discovery()
+        } catch (_: Exception) {
+            throw OidcCallbackFailure("discovery")
+        }
+        val basic = basicAuthCredentials(clientId!!, clientSecret!!)
         val form = listOf(
             "grant_type" to "authorization_code",
             "code" to code,
@@ -102,22 +106,28 @@ class AutheliaOidc(
             "client_id" to clientId!!,
             "code_verifier" to transaction.verifier,
         ).joinToString("&") { (key, value) -> "${encode(key)}=${encode(value)}" }
-        val tokenJson = request(
-            HttpRequest.newBuilder(URI(metadata.tokenEndpoint))
-                .timeout(Duration.ofSeconds(5))
-                .header("Authorization", "Basic $basic")
-                .header("Content-Type", "application/x-www-form-urlencoded")
-                .POST(HttpRequest.BodyPublishers.ofString(form))
-                .build()
-        )
-        val idToken = Json.parseToJsonElement(tokenJson).jsonObject["id_token"]?.jsonPrimitive?.content ?: return null
-        val claims = verifyIdToken(idToken, metadata.jwksUri, transaction.nonceHash) ?: return null
-        val subject = claims.subject ?: return null
+        val tokenJson = try {
+            request(
+                HttpRequest.newBuilder(URI(metadata.tokenEndpoint))
+                    .timeout(Duration.ofSeconds(5))
+                    .header("Authorization", "Basic $basic")
+                    .header("Content-Type", "application/x-www-form-urlencoded")
+                    .POST(HttpRequest.BodyPublishers.ofString(form))
+                    .build()
+            )
+        } catch (_: Exception) {
+            throw OidcCallbackFailure("token_exchange")
+        }
+        val idToken = Json.parseToJsonElement(tokenJson).jsonObject["id_token"]?.jsonPrimitive?.content
+            ?: throw OidcCallbackFailure("id_token_missing")
+        val claims = verifyIdToken(idToken, metadata.jwksUri, transaction.nonceHash)
+            ?: throw OidcCallbackFailure("id_token_verification")
+        val subject = claims.subject ?: throw OidcCallbackFailure("subject_missing")
         val groups = claimGroups(claims.getClaim("groups"))
-        if (adminGroup !in groups) return null
+        if (adminGroup !in groups) throw OidcCallbackFailure("admin_group")
 
         val expiresAt = minOf(claims.expirationTime?.toInstant() ?: Instant.now(), Instant.now().plus(Duration.ofHours(8)))
-        if (!expiresAt.isAfter(Instant.now())) return null
+        if (!expiresAt.isAfter(Instant.now())) throw OidcCallbackFailure("token_expired")
         val sessionToken = randomValue()
         database.query { connection ->
             connection.prepareStatement("INSERT INTO admin_sessions(id_hash, subject, groups, expires_at) VALUES (?, ?, ?, ?)").use {
@@ -224,3 +234,11 @@ class AutheliaOidc(
     private data class OidcTransaction(val nonceHash: ByteArray, val verifier: String)
     private data class OidcMetadata(val authorizationEndpoint: String, val tokenEndpoint: String, val jwksUri: String)
 }
+
+internal fun basicAuthCredentials(clientId: String, clientSecret: String): String =
+    Base64.getEncoder().encodeToString(
+        "${URLEncoder.encode(clientId, StandardCharsets.UTF_8)}:${URLEncoder.encode(clientSecret, StandardCharsets.UTF_8)}"
+            .toByteArray(StandardCharsets.UTF_8)
+    )
+
+internal class OidcCallbackFailure(val stage: String) : RuntimeException(stage)

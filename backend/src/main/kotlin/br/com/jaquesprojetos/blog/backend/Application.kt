@@ -143,7 +143,15 @@ fun Application.module() {
             get("/admin/callback") {
                 val state = call.request.queryParameters["state"].orEmpty()
                 val code = call.request.queryParameters["code"].orEmpty()
-                val session = if (state.length <= 256 && code.length <= 4096) runCatching { onIo { adminAuth.complete(state, code) } }.getOrNull() else null
+                val session = if (state.length <= 256 && code.length <= 4096) {
+                    try {
+                        onIo { adminAuth.complete(state, code) }
+                    } catch (failure: Exception) {
+                        val stage = (failure as? OidcCallbackFailure)?.stage ?: "unexpected"
+                        appLog.warn("Authelia OIDC callback failed at stage: $stage")
+                        null
+                    }
+                } else null
                 if (session == null) {
                     call.respond(HttpStatusCode.Unauthorized, ErrorResponse("oidc_login_failed", "Could not complete the Authelia sign-in"))
                 } else {
