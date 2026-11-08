@@ -1,19 +1,19 @@
 package br.com.jaquesprojetos.blogmultiplatform.styles
 
 import br.com.jaquesprojetos.blogmultiplatform.models.Theme
-import com.varabyte.kobweb.compose.css.CSSTransition
+import com.varabyte.kobweb.compose.css.Transition
 import com.varabyte.kobweb.compose.ui.Modifier
 import com.varabyte.kobweb.compose.ui.modifiers.border
 import com.varabyte.kobweb.compose.ui.modifiers.borderRadius
 import com.varabyte.kobweb.compose.ui.modifiers.transition
-import com.varabyte.kobweb.silk.components.style.ComponentStyle
-import com.varabyte.kobweb.silk.components.style.focus
+import com.varabyte.kobweb.silk.style.CssStyle
+import com.varabyte.kobweb.silk.style.selectors.focus
 import org.jetbrains.compose.web.css.Color
 import org.jetbrains.compose.web.css.LineStyle
 import org.jetbrains.compose.web.css.ms
 import org.jetbrains.compose.web.css.px
 
-val LoginInputStyle by ComponentStyle {
+val LoginInputStyle = CssStyle {
     base {
         Modifier
             .border(
@@ -22,7 +22,7 @@ val LoginInputStyle by ComponentStyle {
                 color = Color.transparent
             )
             .borderRadius (4.px)
-            .transition(CSSTransition(property = "border", duration = 300.ms))
+            .transition(Transition.of(property = "border", duration = 300.ms))
     }
     focus {
         Modifier.border(

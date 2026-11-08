@@ -1,7 +1,6 @@
 plugins {
     alias(libs.plugins.android.application)
-    alias(libs.plugins.jetbrains.kotlin.android)
-    alias(libs.plugins.mongodb.realm)
+    alias(libs.plugins.kotlin.compose)
     alias(libs.plugins.serialization.plugin)
 
 }
@@ -33,17 +32,11 @@ android {
         }
     }
     compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_22
-        targetCompatibility = JavaVersion.VERSION_22
-    }
-    kotlinOptions {
-        jvmTarget = "1.8"
+        sourceCompatibility = JavaVersion.VERSION_17
+        targetCompatibility = JavaVersion.VERSION_17
     }
     buildFeatures {
         compose = true
-    }
-    composeOptions {
-        kotlinCompilerExtensionVersion = "1.5.13"
     }
     packaging {
         resources {
@@ -63,7 +56,6 @@ dependencies {
     implementation(libs.androidx.ui.tooling.preview)
     implementation(libs.androidx.material3)
     implementation(libs.kotlinx.coroutines)
-    implementation(libs.mongodb.sync)
     implementation(libs.coil.compose)
     implementation(libs.kotlinx.serialization)
     implementation(libs.navigation.compose)

@@ -9,14 +9,13 @@ import androidx.compose.runtime.setValue
 import br.com.jaquesprojetos.blogmultiplatform.models.Theme
 import br.com.jaquesprojetos.blogmultiplatform.util.Id
 import br.com.jaquesprojetos.blogmultiplatform.util.noBorder
-import com.varabyte.kobweb.compose.css.CSSTransition
+import com.varabyte.kobweb.compose.css.Transition
 import com.varabyte.kobweb.compose.css.Cursor
 import com.varabyte.kobweb.compose.css.TransitionProperty
 import com.varabyte.kobweb.compose.foundation.layout.Row
 import com.varabyte.kobweb.compose.ui.Alignment
 import com.varabyte.kobweb.compose.ui.Modifier
 import com.varabyte.kobweb.compose.ui.modifiers.backgroundColor
-import com.varabyte.kobweb.compose.ui.modifiers.border
 import com.varabyte.kobweb.compose.ui.modifiers.borderRadius
 import com.varabyte.kobweb.compose.ui.modifiers.color
 import com.varabyte.kobweb.compose.ui.modifiers.cursor
@@ -35,10 +34,9 @@ import com.varabyte.kobweb.compose.ui.thenIf
 import com.varabyte.kobweb.compose.ui.toAttrs
 import com.varabyte.kobweb.silk.components.icons.fa.FaMagnifyingGlass
 import com.varabyte.kobweb.silk.components.icons.fa.IconSize
-import com.varabyte.kobweb.silk.components.style.breakpoint.Breakpoint
+import com.varabyte.kobweb.silk.style.breakpoint.Breakpoint
 import org.jetbrains.compose.web.attributes.InputType
 import org.jetbrains.compose.web.css.Color
-import org.jetbrains.compose.web.css.LineStyle
 import org.jetbrains.compose.web.css.ms
 import org.jetbrains.compose.web.css.px
 import org.jetbrains.compose.web.dom.Input
@@ -69,18 +67,7 @@ fun SearchBar(
                 .height(54.px)
                 .backgroundColor(if (darkTheme) Theme.Tertiary.rgb else Theme.LightGray.rgb)
                 .borderRadius(r = 100.px)
-                .border(
-                    width = 2.px,
-                    style = LineStyle.Solid,
-                    color = when {
-                        focused && !darkTheme -> Theme.Primary.rgb
-                        focused && darkTheme -> Theme.Primary.rgb
-                        !focused && !darkTheme -> Theme.LightGray.rgb
-                        !focused && darkTheme -> Theme.Secondary.rgb
-                        else -> Theme.LightGray.rgb
-                    }
-                )
-                .transition(CSSTransition(TransitionProperty.All, duration = 200.ms)),
+                .transition(Transition.of(TransitionProperty.All, duration = 200.ms)),
             verticalAlignment = Alignment.CenterVertically
 
         ) {

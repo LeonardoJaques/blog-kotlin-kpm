@@ -16,7 +16,7 @@ import br.com.jaquesprojetos.blogmultiplatform.util.Constants.SIDE_PANEL_WIDTH
 import br.com.jaquesprojetos.blogmultiplatform.util.Id
 import br.com.jaquesprojetos.blogmultiplatform.util.Res
 import br.com.jaquesprojetos.blogmultiplatform.util.logout
-import com.varabyte.kobweb.compose.css.CSSTransition
+import com.varabyte.kobweb.compose.css.Transition
 import com.varabyte.kobweb.compose.css.Cursor
 import com.varabyte.kobweb.compose.css.Overflow
 import com.varabyte.kobweb.compose.css.ScrollBehavior
@@ -55,8 +55,8 @@ import com.varabyte.kobweb.silk.components.graphics.Image
 import com.varabyte.kobweb.silk.components.icons.fa.FaBars
 import com.varabyte.kobweb.silk.components.icons.fa.FaXmark
 import com.varabyte.kobweb.silk.components.icons.fa.IconSize
-import com.varabyte.kobweb.silk.components.style.breakpoint.Breakpoint
-import com.varabyte.kobweb.silk.components.style.toModifier
+import com.varabyte.kobweb.silk.style.breakpoint.Breakpoint
+import com.varabyte.kobweb.silk.style.toModifier
 import com.varabyte.kobweb.silk.components.text.SpanText
 import com.varabyte.kobweb.silk.theme.breakpoint.rememberBreakpoint
 import kotlinx.coroutines.delay
@@ -138,6 +138,13 @@ fun NavigationItems() {
         onClick = {
             context.router.navigateTo(Screen.AdminMyPosts.route)
         }
+    )
+    NavigationIcon(
+        modifier = Modifier.margin(bottom = 24.px),
+        selected = context.route.path == Screen.AdminComments.route,
+        title = "Comments",
+        icon = Res.PathIcon.posts,
+        onClick = { context.router.navigateTo(Screen.AdminComments.route) }
     )
     NavigationIcon(
         modifier = Modifier.margin(left = 2.px),
@@ -280,7 +287,7 @@ fun OverflowSidePanel(
             .fillMaxWidth()
             .height(100.vh)
             .opacity(opacity)
-            .transition(CSSTransition(property = "opacity", duration = 300.ms))
+            .transition(Transition.of(property = "opacity", duration = 300.ms))
             .position(Position.Fixed)
             .zIndex(9)
             .backgroundColor(Theme.HalfBlack.rgb)
@@ -291,7 +298,7 @@ fun OverflowSidePanel(
                 .padding(all = 24.px)
                 .fillMaxHeight()
                 .translateX(translateX)
-                .transition(CSSTransition(property = "translate", duration = 300.ms))
+                .transition(Transition.of(property = "translate", duration = 300.ms))
                 .width(if (breakpoint < Breakpoint.MD) 50.percent else 25.percent)
                 .overflow(Overflow.Auto)
                 .scrollBehavior(ScrollBehavior.Smooth)

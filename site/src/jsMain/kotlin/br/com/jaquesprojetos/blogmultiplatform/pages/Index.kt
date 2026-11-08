@@ -30,9 +30,13 @@ import com.varabyte.kobweb.compose.foundation.layout.Column
 import com.varabyte.kobweb.compose.ui.Alignment
 import com.varabyte.kobweb.compose.ui.Modifier
 import com.varabyte.kobweb.compose.ui.modifiers.fillMaxSize
+import com.varabyte.kobweb.compose.ui.modifiers.classNames
 import com.varabyte.kobweb.core.Page
 import com.varabyte.kobweb.core.rememberPageContext
 import com.varabyte.kobweb.silk.theme.breakpoint.rememberBreakpoint
+import kotlinx.coroutines.async
+import kotlinx.coroutines.awaitAll
+import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.launch
 
 @Page
@@ -56,45 +60,40 @@ fun HomePage() {
     var showMorePopularPosts by remember { mutableStateOf(false) }
 
     LaunchedEffect(Unit) {
-        fetchMainPosts(
-            onSuccess = { mainPosts = it },
-            onError = {}
-        )
-        fetchLatestPosts(
-            skip = latestPostsToSkip,
-            onSuccess = { response ->
-                if (response is ApiListResponse.Success) {
-                    latestPosts.addAll(response.data)
-                    latestPostsToSkip += POSTS_PER_PAGE
-                    if (response.data.size >= POSTS_PER_PAGE) showMoreLatestPosts = true
+        coroutineScope {
+            listOf(
+                async {
+                    fetchMainPosts(onSuccess = { mainPosts = it }, onError = {})
+                },
+                async {
+                    fetchLatestPosts(skip = latestPostsToSkip, onSuccess = { response ->
+                        if (response is ApiListResponse.Success) {
+                            latestPosts.addAll(response.data)
+                            latestPostsToSkip += POSTS_PER_PAGE
+                            if (response.data.size >= POSTS_PER_PAGE) showMoreLatestPosts = true
+                        }
+                    }, onError = {})
+                },
+                async {
+                    fetchPopularPosts(skip = popularPostsToSkip, onSuccess = { response ->
+                        if (response is ApiListResponse.Success) {
+                            popularPosts.addAll(response.data)
+                            popularPostsToSkip += POSTS_PER_PAGE
+                            if (response.data.size >= POSTS_PER_PAGE) showMorePopularPosts = true
+                        }
+                    }, onError = {})
+                },
+                async {
+                    fetchSponsoredPosts(onSuccess = { response ->
+                        if (response is ApiListResponse.Success) sponsoredPosts.addAll(response.data)
+                    }, onError = {})
                 }
-            },
-            onError = {}
-        )
-        fetchPopularPosts(
-            skip = popularPostsToSkip,
-            onSuccess = { response ->
-                if (response is ApiListResponse.Success) {
-                    popularPosts.addAll(response.data)
-                    popularPostsToSkip += POSTS_PER_PAGE
-                    if (response.data.size >= POSTS_PER_PAGE) showMorePopularPosts = true
-                }
-            },
-            onError = {}
-        )
-
-        fetchSponsoredPosts(
-            onSuccess = { response ->
-                if (response is ApiListResponse.Success) {
-                    sponsoredPosts.addAll(response.data)
-                }
-            },
-            onError = {}
-        )
+            ).awaitAll()
+        }
     }
 
     Column(
-        modifier = Modifier.fillMaxSize(),
+        modifier = Modifier.fillMaxSize().classNames("vintage-home"),
         verticalArrangement = Arrangement.Top,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
@@ -116,6 +115,7 @@ fun HomePage() {
         )
         MainSection(
             posts = mainPosts,
+            fallbackPosts = latestPosts,
             breakpoint = breakpoint,
             onClick = { context.router.navigateTo(Screen.PostPage.getPost(id = it)) }
 

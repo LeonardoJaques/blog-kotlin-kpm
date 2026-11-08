@@ -14,44 +14,31 @@ import com.varabyte.kobweb.compose.ui.modifiers.border
 import com.varabyte.kobweb.compose.ui.modifiers.outline
 import com.varabyte.kobweb.core.rememberPageContext
 import kotlinx.browser.document
-import kotlinx.browser.localStorage
+import kotlinx.browser.window
+import com.varabyte.kobweb.silk.components.text.SpanText
 import org.jetbrains.compose.web.css.Color
 import org.jetbrains.compose.web.css.LineStyle
 import org.jetbrains.compose.web.css.px
 import org.w3c.dom.HTMLTextAreaElement
-import org.w3c.dom.get
-import org.w3c.dom.set
 import kotlin.js.Date
 
 @Composable
 fun isUserLoggedIn(content: @Composable () -> Unit) {
     val context = rememberPageContext()
-    val remembered = remember { localStorage["remember"].toBoolean() }
-    val userId = remember { localStorage["userId"] }
-    var userIdExists by remember { mutableStateOf(false) }
-
-    LaunchedEffect(key1 = Unit) {
-        ->
-        userIdExists = if (!userId.isNullOrEmpty()) checkUserId(id = userId) else false
-        if (!remembered || !userIdExists) {
-            // Ensure the router is set up correctly
-            context.router.navigateTo(Screen.AdminLogin.route)
-        }
+    var authorized by remember { mutableStateOf(false) }
+    var checked by remember { mutableStateOf(false) }
+    LaunchedEffect(Unit) {
+        authorized = runCatching { getBackend("admin/session").ok }.getOrDefault(false)
+        checked = true
+        if (!authorized) context.router.navigateTo(Screen.AdminLogin.route)
     }
-
-    if (remembered && userIdExists) {
-        content()
-    } else {
-        println("Loading...")
-    }
+    if (authorized) content() else if (!checked) SpanText("Verifying admin session…")
 }
 
 fun logout() {
-    localStorage["remember"] = "false"
-    localStorage.removeItem("remember")
-    localStorage.removeItem("userId")
-    localStorage.removeItem("username")
-
+    val init: dynamic = js("({ method: 'POST', credentials: 'include', headers: {} })")
+    browserCookie("admin_csrf")?.let { init.headers["X-CSRF-Token"] = it }
+    window.fetch("${backendBaseUrl()}/api/v1/admin/logout", init)
 }
 
 fun Modifier.noBorder(): Modifier {

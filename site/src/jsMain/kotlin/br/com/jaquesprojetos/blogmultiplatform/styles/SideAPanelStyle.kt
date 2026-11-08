@@ -2,16 +2,16 @@ package br.com.jaquesprojetos.blogmultiplatform.styles
 
 import br.com.jaquesprojetos.blogmultiplatform.models.Theme
 import br.com.jaquesprojetos.blogmultiplatform.util.Id
-import com.varabyte.kobweb.compose.css.CSSTransition
+import com.varabyte.kobweb.compose.css.Transition
 import com.varabyte.kobweb.compose.css.TransitionProperty
 import com.varabyte.kobweb.compose.ui.Modifier
 import com.varabyte.kobweb.compose.ui.modifiers.color
 import com.varabyte.kobweb.compose.ui.modifiers.transition
 import com.varabyte.kobweb.compose.ui.styleModifier
-import com.varabyte.kobweb.silk.components.style.ComponentStyle
+import com.varabyte.kobweb.silk.style.CssStyle
 import org.jetbrains.compose.web.css.ms
 
-val NavigationItemStyle by ComponentStyle {
+val NavigationItemStyle = CssStyle {
     cssRule(
         "> #${Id.svgParent} > #${Id.vectorIcon}"
     ) {
@@ -25,7 +25,7 @@ val NavigationItemStyle by ComponentStyle {
     ) {
         Modifier
             .transition(
-                CSSTransition(
+                Transition.of(
                     property = TransitionProperty.All,
                     duration = 300.ms,
                 )
@@ -38,7 +38,7 @@ val NavigationItemStyle by ComponentStyle {
     cssRule("> #${Id.navigationText}") {
         Modifier
             .transition(
-                CSSTransition(
+                Transition.of(
                     property = TransitionProperty.All,
                     duration = 300.ms,
                 )

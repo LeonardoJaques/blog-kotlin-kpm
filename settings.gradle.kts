@@ -13,3 +13,6 @@ rootProject.name = "BlogMultiplatform"
 include(":site")
 include(":worker")
 include(":androidapp")
+include(":backend")
+include(":shared-contracts")
+include(":tars-connector")

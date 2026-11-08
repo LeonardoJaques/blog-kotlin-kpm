@@ -1,0 +1,98 @@
+name: ljblog-kotlin
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: blog
+      POSTGRES_USER: blog
+      POSTGRES_PASSWORD: ${DATABASE_PASSWORD:?Set DATABASE_PASSWORD in .env}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U blog -d blog"]
+      interval: 5s
+      timeout: 3s
+      retries: 15
+    networks: [app]
+
+  valkey:
+    image: valkey/valkey:8-alpine
+    restart: unless-stopped
+    command: ["valkey-server", "--appendonly", "yes"]
+    volumes:
+      - valkey_data:/data
+    healthcheck:
+      test: ["CMD", "valkey-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 15
+    networks: [app]
+
+  backend:
+    build:
+      context: ./backend
+    restart: unless-stopped
+    environment:
+      PORT: 8081
+      DATABASE_URL: jdbc:postgresql://postgres:5432/blog
+      DATABASE_USER: blog
+      DATABASE_PASSWORD: ${DATABASE_PASSWORD:?Set DATABASE_PASSWORD in .env}
+      REDIS_URL: redis://valkey:6379/0
+      WEB_ORIGINS: https://jaquesprojetos.com.br
+      PUBLIC_BASE_URL: https://jaquesprojetos.com.br/ljblog
+      WEB_BASE_URL: https://jaquesprojetos.com.br/ljblog
+      LEGACY_GHOST_BASE_URL: https://jaquesprojetos.com.br/convergencia
+      OIDC_ISSUER: ${OIDC_ISSUER:?Set OIDC_ISSUER in .env}
+      OIDC_CLIENT_ID: ${OIDC_CLIENT_ID:?Set OIDC_CLIENT_ID in .env}
+      OIDC_CLIENT_SECRET: ${OIDC_CLIENT_SECRET:?Set OIDC_CLIENT_SECRET in .env}
+      OIDC_REDIRECT_URI: ${OIDC_REDIRECT_URI:?Set OIDC_REDIRECT_URI in .env}
+      OIDC_ADMIN_GROUP: ${OIDC_ADMIN_GROUP:-blog-admin}
+      COOKIE_SECURE: "true"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      valkey:
+        condition: service_healthy
+    networks: [app, web]
+    labels:
+      - traefik.enable=true
+      - traefik.docker.network=web
+      - traefik.http.routers.ljblog-kotlin-api.rule=Host(`jaquesprojetos.com.br`) && PathPrefix(`/ljblog/api`)
+      - traefik.http.routers.ljblog-kotlin-api.entrypoints=websecure
+      - traefik.http.routers.ljblog-kotlin-api.priority=120
+      - traefik.http.routers.ljblog-kotlin-api.middlewares=ljblog-kotlin-api-strip
+      - traefik.http.routers.ljblog-kotlin-api.service=ljblog-kotlin-api
+      - traefik.http.middlewares.ljblog-kotlin-api-strip.stripprefix.prefixes=/ljblog
+      - traefik.http.services.ljblog-kotlin-api.loadbalancer.server.port=8081
+
+  frontend:
+    build:
+      context: ./frontend
+    restart: unless-stopped
+    depends_on: [backend]
+    networks: [web]
+    labels:
+      - traefik.enable=true
+      - traefik.docker.network=web
+      - traefik.http.routers.ljblog-kotlin.rule=Host(`jaquesprojetos.com.br`) && PathPrefix(`/ljblog`)
+      - traefik.http.routers.ljblog-kotlin.entrypoints=websecure
+      - traefik.http.routers.ljblog-kotlin.priority=110
+      - traefik.http.routers.ljblog-kotlin.service=ljblog-kotlin
+      - traefik.http.services.ljblog-kotlin.loadbalancer.server.port=3000
+      - traefik.http.routers.ljblog-kotlin-status.rule=Host(`jaquesprojetos.com.br`) && Path(`/api/kobweb-status`)
+      - traefik.http.routers.ljblog-kotlin-status.entrypoints=websecure
+      - traefik.http.routers.ljblog-kotlin-status.priority=130
+      - traefik.http.routers.ljblog-kotlin-status.service=ljblog-kotlin-api
+
+networks:
+  app:
+    internal: true
+  web:
+    external: true
+    name: web
+
+volumes:
+  postgres_data:
+  valkey_data:

@@ -4,12 +4,14 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import br.com.jaquesprojetos.blogmultiplatform.components.ErrorView
 import br.com.jaquesprojetos.blogmultiplatform.components.LoadingIndicator
 import br.com.jaquesprojetos.blogmultiplatform.components.OverflowSidePanel
+import br.com.jaquesprojetos.blog.contracts.CommentResponse
 import br.com.jaquesprojetos.blogmultiplatform.components.categoryNavigationItems
 import br.com.jaquesprojetos.blogmultiplatform.models.ApiResponse
 import br.com.jaquesprojetos.blogmultiplatform.models.Constants.POST_ID_PARAM
@@ -21,6 +23,11 @@ import br.com.jaquesprojetos.blogmultiplatform.util.Constants.FONT_FAMILY
 import br.com.jaquesprojetos.blogmultiplatform.util.Id
 import br.com.jaquesprojetos.blogmultiplatform.util.Res.Image.logo
 import br.com.jaquesprojetos.blogmultiplatform.util.fetchSelectedPost
+import br.com.jaquesprojetos.blogmultiplatform.util.browserCookie
+import br.com.jaquesprojetos.blogmultiplatform.util.deleteBackend
+import br.com.jaquesprojetos.blogmultiplatform.util.getBackend
+import br.com.jaquesprojetos.blogmultiplatform.util.postBackendJson
+import br.com.jaquesprojetos.blogmultiplatform.util.putBackendJson
 import br.com.jaquesprojetos.blogmultiplatform.util.parseDateString
 import com.varabyte.kobweb.compose.css.TextOverflow
 import com.varabyte.kobweb.compose.foundation.layout.Arrangement
@@ -35,6 +42,7 @@ import com.varabyte.kobweb.compose.ui.modifiers.fontFamily
 import com.varabyte.kobweb.compose.ui.modifiers.fontSize
 import com.varabyte.kobweb.compose.ui.modifiers.id
 import com.varabyte.kobweb.compose.ui.modifiers.margin
+import com.varabyte.kobweb.compose.ui.modifiers.onClick
 import com.varabyte.kobweb.compose.ui.modifiers.maxWidth
 import com.varabyte.kobweb.compose.ui.modifiers.padding
 import com.varabyte.kobweb.compose.ui.modifiers.textOverflow
@@ -48,9 +56,15 @@ import com.varabyte.kobweb.silk.theme.breakpoint.rememberBreakpoint
 import kotlinx.browser.document
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import kotlinx.serialization.decodeFromString
+import kotlinx.serialization.encodeToString
+import kotlinx.serialization.json.Json
 import org.jetbrains.compose.web.css.px
 import org.jetbrains.compose.web.dom.Div
+import org.jetbrains.compose.web.dom.Button
+import org.jetbrains.compose.web.dom.TextArea
 import org.w3c.dom.HTMLDivElement
+import org.w3c.dom.HTMLTextAreaElement
 
 @Page(routeOverride = "post")
 @Composable
@@ -171,6 +185,52 @@ fun PostContent(post: Post) {
         ) {
 
         }
+        ReaderInteractions(post._id)
 
+    }
+}
+
+@Composable
+private fun ReaderInteractions(postId: String) {
+    val scope = rememberCoroutineScope()
+    val comments = remember { mutableStateListOf<CommentResponse>() }
+    var favorite by remember { mutableStateOf(false) }
+    var message by remember { mutableStateOf("") }
+    LaunchedEffect(postId) {
+        val publicComments = runCatching { getBackend("posts/$postId/comments") }.getOrNull()
+        if (publicComments?.ok == true) runCatching {
+            Json.decodeFromString<List<CommentResponse>>(publicComments.body)
+        }.onSuccess { comments.clear(); comments.addAll(it) }
+        val favoriteResponse = runCatching { getBackend("favorites") }.getOrNull()
+        if (favoriteResponse?.ok == true) runCatching {
+            Json.decodeFromString<List<String>>(favoriteResponse.body).contains(postId)
+        }.onSuccess { favorite = it }
+    }
+    Column(Modifier.fillMaxWidth().margin(top = 36.px), verticalArrangement = Arrangement.Top) {
+        Button(attrs = Modifier.onClick {
+            scope.launch {
+                val csrf = browserCookie("reader_csrf")
+                val result = runCatching {
+                    if (favorite) deleteBackend("favorites/$postId", csrf)
+                    else putBackendJson("favorites/$postId", "{}", csrf)
+                }.getOrNull()
+                if (result?.ok == true) favorite = !favorite
+                else message = "Entre na sua conta para salvar este post como favorito."
+            }
+        }.toAttrs()) { SpanText(if (favorite) "Remover dos favoritos" else "Salvar nos favoritos") }
+        SpanText("Comentários")
+        comments.forEach { SpanText(it.body) }
+        TextArea(attrs = Modifier.id("reader-comment").fillMaxWidth().padding(10.px).toAttrs { attr("placeholder", "Escreva um comentário (será revisado antes de aparecer)") })
+        Button(attrs = Modifier.onClick {
+            scope.launch {
+                val body = (document.getElementById("reader-comment") as? HTMLTextAreaElement)?.value.orEmpty()
+                val csrf = browserCookie("reader_csrf")
+                val result = runCatching {
+                    postBackendJson("posts/$postId/comments", Json.encodeToString(mapOf("postId" to postId, "body" to body)), csrf)
+                }.getOrNull()
+                message = if (result?.ok == true) "Comentário enviado para moderação." else "Entre na sua conta e tente novamente."
+            }
+        }.toAttrs()) { SpanText("Enviar comentário") }
+        if (message.isNotEmpty()) SpanText(message)
     }
 }

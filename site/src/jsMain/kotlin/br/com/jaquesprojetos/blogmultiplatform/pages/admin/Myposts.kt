@@ -26,7 +26,7 @@ import br.com.jaquesprojetos.blogmultiplatform.util.isUserLoggedIn
 import br.com.jaquesprojetos.blogmultiplatform.util.noBorder
 import br.com.jaquesprojetos.blogmultiplatform.util.parseSwitchText
 import br.com.jaquesprojetos.blogmultiplatform.util.searchPostByTitle
-import com.varabyte.kobweb.compose.css.CSSTransition
+import com.varabyte.kobweb.compose.css.Transition
 import com.varabyte.kobweb.compose.css.TransitionProperty
 import com.varabyte.kobweb.compose.css.Visibility
 import com.varabyte.kobweb.compose.foundation.layout.Arrangement
@@ -53,7 +53,7 @@ import com.varabyte.kobweb.core.Page
 import com.varabyte.kobweb.core.rememberPageContext
 import com.varabyte.kobweb.silk.components.forms.Switch
 import com.varabyte.kobweb.silk.components.forms.SwitchSize
-import com.varabyte.kobweb.silk.components.style.breakpoint.Breakpoint
+import com.varabyte.kobweb.silk.style.breakpoint.Breakpoint
 import com.varabyte.kobweb.silk.components.text.SpanText
 import com.varabyte.kobweb.silk.theme.breakpoint.rememberBreakpoint
 import kotlinx.browser.document
@@ -148,7 +148,7 @@ fun MyPostsScreen() {
 
                         )
                         .transition(
-                            CSSTransition(
+                            Transition.of(
                                 property = TransitionProperty.All,
                                 duration = 200.ms
                             )

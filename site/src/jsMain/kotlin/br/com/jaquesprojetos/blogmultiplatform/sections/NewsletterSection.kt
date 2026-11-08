@@ -26,6 +26,7 @@ import com.varabyte.kobweb.compose.foundation.layout.Row
 import com.varabyte.kobweb.compose.ui.Alignment
 import com.varabyte.kobweb.compose.ui.Modifier
 import com.varabyte.kobweb.compose.ui.modifiers.backgroundColor
+import com.varabyte.kobweb.compose.ui.modifiers.classNames
 import com.varabyte.kobweb.compose.ui.modifiers.borderRadius
 import com.varabyte.kobweb.compose.ui.modifiers.color
 import com.varabyte.kobweb.compose.ui.modifiers.cursor
@@ -42,8 +43,8 @@ import com.varabyte.kobweb.compose.ui.modifiers.padding
 import com.varabyte.kobweb.compose.ui.modifiers.textAlign
 import com.varabyte.kobweb.compose.ui.modifiers.width
 import com.varabyte.kobweb.compose.ui.toAttrs
-import com.varabyte.kobweb.silk.components.style.breakpoint.Breakpoint
-import com.varabyte.kobweb.silk.components.style.toModifier
+import com.varabyte.kobweb.silk.style.breakpoint.Breakpoint
+import com.varabyte.kobweb.silk.style.toModifier
 import com.varabyte.kobweb.silk.components.text.SpanText
 import kotlinx.browser.document
 import kotlinx.coroutines.delay
@@ -81,6 +82,7 @@ fun NewsletterSection(breakpoint: Breakpoint) {
 
     Box(
         modifier = Modifier
+            .classNames("vintage-newsletter")
             .margin(topBottom = 50.px)
             .fillMaxWidth()
             .maxWidth(PAGE_WIDTH_EX.px)

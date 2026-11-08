@@ -1,11 +1,18 @@
 [versions]
-jetbrains-compose = "1.6.1"
-kobweb = "0.17.1"
-kotlin = "1.9.23"
+jetbrains-compose = "1.12.2"
+kobweb = "0.25.1"
+kotlin = "2.4.21"
 
-mongodb-kotlin = "5.0.0"
-serialization= "1.4.1"
-agp = "8.4.0"
+serialization = "1.6.3"
+agp = "9.4.0"
+ktor = "2.3.12"
+flyway = "10.17.0"
+hikari = "5.1.0"
+postgresql = "42.7.4"
+lettuce = "6.3.2.RELEASE"
+bcprov = "1.78.1"
+jakarta-mail = "2.0.1"
+nimbus = "9.40"
 
 appcompat-v7 = "28.0.0"
 core-ktx = "1.13.1"
@@ -14,21 +21,35 @@ lifecycle-runtime-ktx = "2.7.0"
 activity-compose = "1.9.0"
 compose-bom = "2024.05.00"
 navigation-compose = "2.6.0"
-coroutines = "1.6.4"
-mongodb-sync = "1.7.1"
+coroutines = "1.11.0"
 
 coil = "2.3.0"
 support-annotations = "28.0.0"
 
 
 [libraries]
-kobweb-api = { module = "com.varabyte.kobweb:kobweb-api", version.ref = "kobweb" }
-kobweb-core = { module = "com.varabyte.kobweb:kobweb-core ", version.ref = "kobweb" }
+kobweb-core = { module = "com.varabyte.kobweb:kobweb-core", version.ref = "kobweb" }
 kobweb-silk = { module = "com.varabyte.kobweb:kobweb-silk", version.ref = "kobweb" }
 kobweb-worker = { module = "com.varabyte.kobweb:kobweb-worker", version.ref = "kobweb" }
 
 kotlinx-serialization = { module = "org.jetbrains.kotlinx:kotlinx-serialization-json", version.ref = "serialization" }
-mongodb-kotlin-driver = { module = "org.mongodb:mongodb-driver-kotlin-coroutine", version.ref = "mongodb-kotlin" }
+compose-html-ext = { module = "com.varabyte.kobweb:compose-html-ext", version.ref = "kobweb" }
+ktor-server-core = { module = "io.ktor:ktor-server-core-jvm", version.ref = "ktor" }
+ktor-server-netty = { module = "io.ktor:ktor-server-netty-jvm", version.ref = "ktor" }
+ktor-server-content-negotiation = { module = "io.ktor:ktor-server-content-negotiation-jvm", version.ref = "ktor" }
+ktor-serialization-json = { module = "io.ktor:ktor-serialization-kotlinx-json-jvm", version.ref = "ktor" }
+ktor-server-cors = { module = "io.ktor:ktor-server-cors-jvm", version.ref = "ktor" }
+ktor-server-call-logging = { module = "io.ktor:ktor-server-call-logging-jvm", version.ref = "ktor" }
+ktor-server-status-pages = { module = "io.ktor:ktor-server-status-pages-jvm", version.ref = "ktor" }
+ktor-server-host-common = { module = "io.ktor:ktor-server-host-common-jvm", version.ref = "ktor" }
+flyway-core = { module = "org.flywaydb:flyway-core", version.ref = "flyway" }
+flyway-postgresql = { module = "org.flywaydb:flyway-database-postgresql", version.ref = "flyway" }
+hikari = { module = "com.zaxxer:HikariCP", version.ref = "hikari" }
+postgresql = { module = "org.postgresql:postgresql", version.ref = "postgresql" }
+lettuce = { module = "io.lettuce:lettuce-core", version.ref = "lettuce" }
+bcprov = { module = "org.bouncycastle:bcprov-jdk18on", version.ref = "bcprov" }
+jakarta-mail = { module = "com.sun.mail:jakarta.mail", version.ref = "jakarta-mail" }
+nimbus-jose-jwt = { module = "com.nimbusds:nimbus-jose-jwt", version.ref = "nimbus" }
 
 
 
@@ -45,7 +66,6 @@ androidx-ui-tooling-preview = { module = "androidx.compose.ui:ui-tooling-preview
 androidx-material3 = { module = "androidx.compose.material3:material3"}
 navigation-compose = { module = "androidx.navigation:navigation-compose", version.ref = "navigation-compose"}
 kotlinx-coroutines = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-core", version.ref = "coroutines"}
-mongodb-sync = { module = "io.realm.kotlin:library-sync", version.ref = "mongodb-sync"}
 coil-compose ={ module="io.coil-kt:coil-compose", version.ref="coil" }
 support-annotations = { group = "com.android.support", name = "support-annotations", version.ref = "support-annotations" }
 
@@ -57,10 +77,10 @@ kobweb-library = { id = "com.varabyte.kobweb.library", version.ref = "kobweb" }
 kobweb-worker = { id = "com.varabyte.kobweb.worker", version.ref = "kobweb" }
 kobwebx-markdown = { id = "com.varabyte.kobwebx.markdown", version.ref = "kobweb" }
 kotlin-multiplatform = { id = "org.jetbrains.kotlin.multiplatform", version.ref = "kotlin" }
+kotlin-jvm = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin" }
 serialization-plugin = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlin" }
+kotlin-compose = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "kotlin" }
 android-application = { id = "com.android.application", version.ref = "agp" }
-jetbrains-kotlin-android = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }
-mongodb-realm = {id="io.realm.kotlin", version="1.16.0"}
 
 
 

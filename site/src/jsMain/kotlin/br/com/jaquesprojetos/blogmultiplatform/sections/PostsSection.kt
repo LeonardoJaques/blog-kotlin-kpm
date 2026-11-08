@@ -8,9 +8,10 @@ import com.varabyte.kobweb.compose.foundation.layout.Box
 import com.varabyte.kobweb.compose.ui.Alignment
 import com.varabyte.kobweb.compose.ui.Modifier
 import com.varabyte.kobweb.compose.ui.modifiers.fillMaxWidth
+import com.varabyte.kobweb.compose.ui.modifiers.classNames
 import com.varabyte.kobweb.compose.ui.modifiers.margin
 import com.varabyte.kobweb.compose.ui.modifiers.maxWidth
-import com.varabyte.kobweb.silk.components.style.breakpoint.Breakpoint
+import com.varabyte.kobweb.silk.style.breakpoint.Breakpoint
 import org.jetbrains.compose.web.css.px
 
 @Composable
@@ -24,6 +25,7 @@ fun PostsSection(
 ) {
     Box(
         modifier = Modifier
+            .classNames("vintage-section")
             .fillMaxWidth()
             .maxWidth(PAGE_WIDTH_EX.px).margin(topBottom = 50.px),
         contentAlignment = Alignment.Center

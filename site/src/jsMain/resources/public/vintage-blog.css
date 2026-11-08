@@ -1,0 +1,240 @@
+:root {
+  --paper: #f2ead8;
+  --paper-light: #fbf6e9;
+  --paper-shadow: #e6dac1;
+  --ink: #292d30;
+  --ink-soft: #62615b;
+  --ink-blue: #355b70;
+  --rust: #9a5140;
+}
+
+.vintage-site {
+  min-height: 100vh;
+  color: var(--ink);
+  background-color: var(--paper);
+  background-image:
+    radial-gradient(ellipse at 14% 9%, rgba(117, 81, 42, .055) 0 1px, transparent 1.6px),
+    radial-gradient(ellipse at 78% 28%, rgba(117, 81, 42, .045) 0 1px, transparent 1.8px),
+    repeating-linear-gradient(0deg, rgba(79, 94, 91, .025) 0 1px, transparent 1px 5px),
+    linear-gradient(112deg, #f7f0e1, var(--paper) 54%, #eee4d0);
+  background-size: 13px 13px, 17px 17px, auto, auto;
+  font-family: Georgia, "Times New Roman", serif !important;
+}
+
+.vintage-site,
+.vintage-site * {
+  box-sizing: border-box;
+}
+
+.vintage-home {
+  color: var(--ink);
+  font-family: Georgia, "Times New Roman", serif !important;
+}
+
+.vintage-home > .vintage-header {
+  position: relative;
+  z-index: 2;
+  background: rgba(251, 246, 233, .92) !important;
+  border-bottom: 1px solid rgba(41, 45, 48, .42);
+  box-shadow: 0 3px 0 rgba(41, 45, 48, .07);
+}
+
+.vintage-header::after {
+  position: absolute;
+  right: 5%;
+  bottom: -4px;
+  left: 5%;
+  height: 1px;
+  content: "";
+  border-bottom: 1px dashed rgba(41, 45, 48, .28);
+}
+
+.vintage-header > div {
+  background: transparent !important;
+}
+
+.vintage-header a,
+.vintage-header span,
+.vintage-header svg,
+.vintage-header button {
+  color: var(--ink) !important;
+}
+
+.vintage-header a:hover,
+.vintage-header span:hover {
+  color: var(--rust) !important;
+}
+
+.vintage-hero,
+.vintage-hero > div {
+  background: transparent !important;
+}
+
+.vintage-hero {
+  position: relative;
+  padding: 30px 0 15px;
+}
+
+.vintage-hero::before {
+  display: block;
+  width: min(80%, 1080px);
+  margin: 0 auto 18px;
+  color: var(--rust);
+  content: "CADERNO DE IDEIAS  ·  ARQUITETURA, CÓDIGO & CULTURA";
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: .16em;
+  text-align: left;
+}
+
+.vintage-card {
+  position: relative;
+  min-width: 0;
+  padding: 12px !important;
+  overflow: hidden;
+  color: var(--ink) !important;
+  background: rgba(251, 246, 233, .82);
+  border: 1px solid rgba(41, 45, 48, .48);
+  border-radius: 2px !important;
+  box-shadow: 4px 5px 0 rgba(41, 45, 48, .10), inset 0 0 0 3px rgba(255, 255, 255, .32);
+  transform: rotate(-.22deg);
+}
+
+.vintage-card:nth-child(even) {
+  transform: rotate(.18deg);
+}
+
+.vintage-card:hover {
+  z-index: 1;
+  background: var(--paper-light);
+  box-shadow: 6px 7px 0 rgba(41, 45, 48, .15), inset 0 0 0 3px rgba(255, 255, 255, .42);
+  transform: translateY(-3px) rotate(0deg);
+}
+
+.vintage-card img {
+  filter: sepia(.36) saturate(.78) contrast(1.04);
+  border: 1px solid rgba(41, 45, 48, .46);
+  border-radius: 1px !important;
+}
+
+.vintage-card span {
+  color: var(--ink) !important;
+  font-family: Georgia, "Times New Roman", serif !important;
+}
+
+.vintage-card span:first-of-type {
+  color: var(--rust) !important;
+  font-size: 11px;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+}
+
+.vintage-section {
+  position: relative;
+  padding-top: 20px;
+}
+
+.vintage-section::before {
+  position: absolute;
+  top: 0;
+  left: 10%;
+  width: 80%;
+  content: "";
+  border-top: 1px solid rgba(41, 45, 48, .42);
+}
+
+.vintage-post-list > span:first-child {
+  color: var(--ink-blue) !important;
+  font-family: Georgia, "Times New Roman", serif !important;
+  font-size: 21px !important;
+  font-weight: 700 !important;
+  letter-spacing: .04em;
+  text-transform: uppercase;
+}
+
+.vintage-post-list > span:last-child {
+  color: var(--rust) !important;
+  font-family: Georgia, "Times New Roman", serif !important;
+  text-decoration: underline;
+  text-decoration-style: wavy;
+  text-underline-offset: 4px;
+}
+
+.vintage-newsletter {
+  padding: 34px 22px;
+  background: rgba(230, 218, 193, .55);
+  border-top: 1px dashed rgba(41, 45, 48, .48);
+  border-bottom: 1px dashed rgba(41, 45, 48, .48);
+}
+
+.vintage-newsletter span {
+  color: var(--ink) !important;
+  font-family: Georgia, "Times New Roman", serif !important;
+}
+
+.vintage-newsletter input {
+  color: var(--ink) !important;
+  background: var(--paper-light) !important;
+  border: 1px solid rgba(41, 45, 48, .62) !important;
+  border-radius: 2px !important;
+  box-shadow: 3px 3px 0 rgba(41, 45, 48, .10);
+}
+
+.vintage-newsletter button {
+  color: var(--paper-light) !important;
+  background: var(--ink-blue) !important;
+  border: 1px solid var(--ink) !important;
+  border-radius: 2px !important;
+  box-shadow: 3px 3px 0 rgba(41, 45, 48, .14);
+  font-family: Georgia, "Times New Roman", serif !important;
+}
+
+.vintage-footer {
+  color: var(--paper-light) !important;
+  background: var(--ink) !important;
+  border-top: 4px double var(--rust);
+}
+
+.vintage-footer span {
+  color: var(--paper-light) !important;
+  font-family: Georgia, "Times New Roman", serif !important;
+}
+
+.vintage-footer span:last-child {
+  color: #d89b76 !important;
+}
+
+.vintage-site input,
+.vintage-site textarea,
+.vintage-site select {
+  font-family: Georgia, "Times New Roman", serif !important;
+}
+
+@media (max-width: 768px) {
+  .vintage-hero::before {
+    width: 90%;
+    font-size: 9px;
+    letter-spacing: .1em;
+  }
+
+  .vintage-hero .vintage-card {
+    transform: none;
+  }
+
+  .vintage-section::before {
+    left: 5%;
+    width: 90%;
+  }
+
+  .vintage-newsletter {
+    padding: 28px 14px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .vintage-card,
+  .vintage-card:hover {
+    transform: none;
+    transition: none !important;
+  }
+}

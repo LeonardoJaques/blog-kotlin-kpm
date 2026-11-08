@@ -1,14 +1,14 @@
 site:
   title: "Leonardo jaques Multiverse"
+  basePath: "ljblog"
 
 server:
   files:
     dev:
       contentRoot: "build/processedResources/js/main/public"
-      script: "build/dist/js/developmentExecutable/blogmultiplatform.js"
-      api: "build/libs/blogmultiplatform.jar"
+      script: "build/kotlin-webpack/js/developmentExecutable/blogmultiplatform.js"
     prod:
-      script: "build/dist/js/productionExecutable/blogmultiplatform.js"
+      script: "build/kotlin-webpack/js/productionExecutable/blogmultiplatform.js"
       siteRoot: ".kobweb/site"
 
   port: 3000

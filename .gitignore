@@ -24,4 +24,12 @@ kotlin-js-store
 
 # Gradle ignores
 .gradle
+.kotlin
+
+# Local Android SDK path and development secrets
+local.properties
+.env
+.env.*
+!.env.example
+!.env.production.example
 

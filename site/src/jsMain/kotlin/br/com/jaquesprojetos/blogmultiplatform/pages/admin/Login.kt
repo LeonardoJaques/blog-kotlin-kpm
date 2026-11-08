@@ -1,24 +1,11 @@
 package br.com.jaquesprojetos.blogmultiplatform.pages.admin
 
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.runtime.setValue
 import br.com.jaquesprojetos.blogmultiplatform.models.Theme
-import br.com.jaquesprojetos.blogmultiplatform.models.User
-import br.com.jaquesprojetos.blogmultiplatform.models.UserWithoutPassword
-import br.com.jaquesprojetos.blogmultiplatform.navigation.Screen
-import br.com.jaquesprojetos.blogmultiplatform.styles.LoginInputStyle
 import br.com.jaquesprojetos.blogmultiplatform.util.Constants.FONT_FAMILY
-import br.com.jaquesprojetos.blogmultiplatform.util.Id
 import br.com.jaquesprojetos.blogmultiplatform.util.Res
-import br.com.jaquesprojetos.blogmultiplatform.util.checkUserExistence
-import br.com.jaquesprojetos.blogmultiplatform.util.noBorder
 import com.varabyte.kobweb.compose.css.Cursor
 import com.varabyte.kobweb.compose.css.FontWeight
-import com.varabyte.kobweb.compose.css.TextAlign
 import com.varabyte.kobweb.compose.foundation.layout.Arrangement
 import com.varabyte.kobweb.compose.foundation.layout.Box
 import com.varabyte.kobweb.compose.foundation.layout.Column
@@ -33,166 +20,58 @@ import com.varabyte.kobweb.compose.ui.modifiers.fontFamily
 import com.varabyte.kobweb.compose.ui.modifiers.fontSize
 import com.varabyte.kobweb.compose.ui.modifiers.fontWeight
 import com.varabyte.kobweb.compose.ui.modifiers.height
-import com.varabyte.kobweb.compose.ui.modifiers.id
 import com.varabyte.kobweb.compose.ui.modifiers.margin
 import com.varabyte.kobweb.compose.ui.modifiers.onClick
-import com.varabyte.kobweb.compose.ui.modifiers.outline
 import com.varabyte.kobweb.compose.ui.modifiers.padding
-import com.varabyte.kobweb.compose.ui.modifiers.textAlign
 import com.varabyte.kobweb.compose.ui.modifiers.width
 import com.varabyte.kobweb.compose.ui.toAttrs
 import com.varabyte.kobweb.core.Page
-import com.varabyte.kobweb.core.rememberPageContext
 import com.varabyte.kobweb.silk.components.graphics.Image
-import com.varabyte.kobweb.silk.components.style.toModifier
 import com.varabyte.kobweb.silk.components.text.SpanText
-import kotlinx.browser.document
-import kotlinx.browser.localStorage
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.launch
-import org.jetbrains.compose.web.attributes.InputType
-import org.jetbrains.compose.web.css.Color
-import org.jetbrains.compose.web.css.LineStyle
+import kotlinx.browser.window
 import org.jetbrains.compose.web.css.px
 import org.jetbrains.compose.web.dom.Button
-import org.jetbrains.compose.web.dom.Input
-import org.w3c.dom.HTMLInputElement
-import org.w3c.dom.set
 
 @Page
 @Composable
 fun LoginScreen() {
-    val scope = rememberCoroutineScope()
-    var errorText by remember { mutableStateOf(" ") }
-    val context = rememberPageContext()
-    Box(
-        modifier = Modifier.fillMaxSize(),
-        contentAlignment = Alignment.Center
-    ) {
+    Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
         Column(
             modifier = Modifier
                 .padding(leftRight = 50.px, top = 80.px, bottom = 24.px)
                 .backgroundColor(Theme.LightGray.rgb),
             verticalArrangement = Arrangement.Center,
-            horizontalAlignment = Alignment.CenterHorizontally
+            horizontalAlignment = Alignment.CenterHorizontally,
         ) {
             Image(
-                modifier = Modifier
-                    .margin(bottom = 50.px)
-                    .width(100.px),
+                modifier = Modifier.margin(bottom = 32.px).width(100.px),
                 src = Res.Image.logo,
                 description = "Logo image",
             )
-            Input(
-                type = InputType.Text,
-                attrs = LoginInputStyle.toModifier()
-                    .id(Id.usernameInput)
-                    .margin(bottom = 12.px)
-                    .width(350.px)
-                    .height(54.px)
-                    .padding(leftRight = 20.px)
-                    .backgroundColor(Theme.White.rgb)
-                    .fontFamily(FONT_FAMILY)
-                    .fontSize(14.px)
-
-                    .outline(
-                        width = 0.px,
-                        style = LineStyle.None,
-                        color = Color.transparent
-                    )
-                    .toAttrs {
-                        attr("placeholder", "Username")
-                    }
-            )
-            Input(
-                type = InputType.Password,
-                attrs = LoginInputStyle.toModifier()
-                    .id(Id.passwordInput)
-                    .margin(bottom = 20.px)
-                    .width(350.px)
-                    .height(54.px)
-                    .padding(leftRight = 20.px)
-                    .backgroundColor(Theme.White.rgb)
-                    .fontFamily(FONT_FAMILY)
-                    .fontSize(14.px)
-                    .outline(
-                        width = 0.px,
-                        style = LineStyle.None,
-                        color = Color.transparent
-                    )
-                    .toAttrs {
-                        attr("placeholder", "Password")
-                    }
-            )
+            SpanText("Administração protegida por Authelia")
             Button(
                 attrs = Modifier
-                    .margin(bottom = 24.px)
+                    .margin(top = 24.px)
                     .width(350.px)
                     .height(54.px)
+                    .padding(leftRight = 20.px)
                     .backgroundColor(Theme.Primary.rgb)
                     .color(Theme.White.rgb)
-                    .noBorder()
                     .borderRadius(r = 4.px)
                     .fontFamily(FONT_FAMILY)
                     .fontWeight(FontWeight.Medium)
                     .fontSize(14.px)
-                    .onClick {
-                        scope.launch {
-                            val username =
-                                (document.getElementById(Id.usernameInput)
-                                        as HTMLInputElement).value
-                            val password =
-                                (document.getElementById(Id.passwordInput)
-                                        as HTMLInputElement).value
-
-
-                            if (username.isNotEmpty() && password.isNotEmpty()) {
-                                val user = checkUserExistence(
-                                    User(
-                                        username = username,
-                                        password = password
-                                    )
-                                )
-                                if (user != null) {
-                                    rememberLoggedIn(remember = true, user = user)
-                                    context.router.navigateTo(Screen.AdminHome.route)
-
-                                } else {
-                                    errorText = "The user doesn't exist."
-                                    delay(3000)
-                                    errorText = " "
-                                }
-                            } else {
-                                errorText = "Input fields cannot be empty"
-                                delay(3000)
-                                errorText = " "
-                            }
-                        }
-
-                    }
                     .cursor(Cursor.Pointer)
-                    .toAttrs()
-
+                    .onClick {
+                        val apiOrigin = if (window.location.hostname == "localhost" || window.location.hostname == "127.0.0.1") {
+                            "${window.location.protocol}//${window.location.hostname}:8081"
+                        } else "${window.location.origin}/ljblog"
+                        window.location.href = "$apiOrigin/api/v1/admin/login"
+                    }
+                    .toAttrs(),
             ) {
-                SpanText(text = "Sign in")
+                SpanText("Entrar com Authelia")
             }
-            SpanText(
-                modifier = Modifier
-                    .width(350.px)
-                    .color(Theme.Error.rgb)
-                    .textAlign(TextAlign.Center)
-                    .fontWeight(FontWeight.Medium),
-                text = errorText
-            )
         }
-    }
-}
-
-private fun rememberLoggedIn(remember: Boolean, user: UserWithoutPassword? = null) {
-    localStorage["remember"] = remember.toString()
-    if (user != null) {
-        localStorage["userId"] = user._id
-        localStorage["username"] = user.username
-
     }
 }

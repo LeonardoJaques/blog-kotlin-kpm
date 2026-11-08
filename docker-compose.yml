@@ -1,0 +1,81 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: blog
+      POSTGRES_USER: blog
+      POSTGRES_PASSWORD: ${DATABASE_PASSWORD:?Set DATABASE_PASSWORD in .env}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U blog -d blog"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+  redis:
+    image: valkey/valkey:8-alpine
+    command: ["valkey-server", "--appendonly", "yes"]
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "valkey-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+  mailpit:
+    image: axllent/mailpit:v1.20
+    ports:
+      - "127.0.0.1:8025:8025"
+  backend:
+    build:
+      context: .
+      dockerfile: backend/Dockerfile
+    environment:
+      PORT: 8081
+      DATABASE_URL: jdbc:postgresql://postgres:5432/blog
+      DATABASE_USER: blog
+      DATABASE_PASSWORD: ${DATABASE_PASSWORD:?Set DATABASE_PASSWORD in .env}
+      REDIS_URL: redis://redis:6379/0
+      WEB_ORIGINS: ${WEB_ORIGINS:-http://localhost:8080}
+      PUBLIC_BASE_URL: ${PUBLIC_BASE_URL:-http://localhost:8081}
+      SMTP_HOST: mailpit
+      SMTP_PORT: 1025
+      SMTP_FROM: no-reply@blog.local
+      SMTP_USER: ${SMTP_USER:-}
+      SMTP_PASSWORD: ${SMTP_PASSWORD:-}
+      SMTP_STARTTLS: ${SMTP_STARTTLS:-false}
+      COOKIE_SECURE: ${COOKIE_SECURE:-false}
+      WEB_BASE_URL: ${WEB_BASE_URL:-http://localhost:8080}
+      LEGACY_GHOST_BASE_URL: ${LEGACY_GHOST_BASE_URL:-https://jaquesprojetos.com.br/convergencia}
+      OIDC_ISSUER: ${OIDC_ISSUER:-}
+      OIDC_CLIENT_ID: ${OIDC_CLIENT_ID:-}
+      OIDC_CLIENT_SECRET: ${OIDC_CLIENT_SECRET:-}
+      OIDC_REDIRECT_URI: ${OIDC_REDIRECT_URI:-}
+      OIDC_ADMIN_GROUP: ${OIDC_ADMIN_GROUP:-blog-admin}
+      TARS_CONNECTOR_TOKEN: ${TARS_CONNECTOR_TOKEN:-}
+    ports:
+      - "127.0.0.1:8081:8081"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      mailpit:
+        condition: service_started
+  tars-connector:
+    profiles: ["tars"]
+    build:
+      context: .
+      dockerfile: tars-connector/Dockerfile
+    environment:
+      BLOG_API_URL: http://backend:8081
+      TARS_CONNECTOR_TOKEN: ${TARS_CONNECTOR_TOKEN:?Set TARS_CONNECTOR_TOKEN in .env}
+      TARS_REVIEW_URL: ${TARS_REVIEW_URL:?Set TARS_REVIEW_URL in .env}
+      TARS_REVIEW_TOKEN: ${TARS_REVIEW_TOKEN:-}
+    depends_on:
+      backend:
+        condition: service_started
+
+volumes:
+  postgres_data:
+  redis_data:

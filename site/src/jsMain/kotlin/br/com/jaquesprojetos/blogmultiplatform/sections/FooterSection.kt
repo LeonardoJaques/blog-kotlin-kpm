@@ -9,6 +9,7 @@ import com.varabyte.kobweb.compose.foundation.layout.Row
 import com.varabyte.kobweb.compose.ui.Alignment
 import com.varabyte.kobweb.compose.ui.Modifier
 import com.varabyte.kobweb.compose.ui.modifiers.backgroundColor
+import com.varabyte.kobweb.compose.ui.modifiers.classNames
 import com.varabyte.kobweb.compose.ui.modifiers.color
 import com.varabyte.kobweb.compose.ui.modifiers.fillMaxWidth
 import com.varabyte.kobweb.compose.ui.modifiers.fontFamily
@@ -24,6 +25,7 @@ fun FooterSection() {
     Box(
         modifier = Modifier
             .fillMaxWidth()
+            .classNames("vintage-footer")
             .padding(topBottom = 50.px)
             .backgroundColor(Theme.Secondary.rgb),
         contentAlignment = Alignment.Center

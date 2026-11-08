@@ -21,6 +21,7 @@ import com.varabyte.kobweb.compose.foundation.layout.Spacer
 import com.varabyte.kobweb.compose.ui.Alignment
 import com.varabyte.kobweb.compose.ui.Modifier
 import com.varabyte.kobweb.compose.ui.modifiers.backgroundColor
+import com.varabyte.kobweb.compose.ui.modifiers.classNames
 import com.varabyte.kobweb.compose.ui.modifiers.color
 import com.varabyte.kobweb.compose.ui.modifiers.cursor
 import com.varabyte.kobweb.compose.ui.modifiers.fillMaxWidth
@@ -34,7 +35,8 @@ import com.varabyte.kobweb.silk.components.graphics.Image
 import com.varabyte.kobweb.silk.components.icons.fa.FaBars
 import com.varabyte.kobweb.silk.components.icons.fa.FaXmark
 import com.varabyte.kobweb.silk.components.icons.fa.IconSize
-import com.varabyte.kobweb.silk.components.style.breakpoint.Breakpoint
+import com.varabyte.kobweb.silk.style.breakpoint.Breakpoint
+import com.varabyte.kobweb.silk.components.text.SpanText
 import kotlinx.browser.document
 import org.jetbrains.compose.web.css.percent
 import org.jetbrains.compose.web.css.px
@@ -51,6 +53,7 @@ fun HeaderSection(
     Box(
         modifier = Modifier
             .fillMaxWidth()
+            .classNames("vintage-header")
             .backgroundColor(Theme.Secondary.rgb),
 
 
@@ -151,6 +154,11 @@ fun Header(
             onSearchIconClick = {
                 fullSearchBarOpened = it
             }
+        )
+        SpanText(
+            text = "Conta",
+            modifier = Modifier.margin(left = 16.px).color(Theme.White.rgb).cursor(Cursor.Pointer)
+                .onClick { context.router.navigateTo("/account") }
         )
     }
 }

@@ -10,7 +10,7 @@ import br.com.jaquesprojetos.blogmultiplatform.models.Theme
 import br.com.jaquesprojetos.blogmultiplatform.styles.PostPreViewStyle
 import br.com.jaquesprojetos.blogmultiplatform.util.Constants.FONT_FAMILY
 import br.com.jaquesprojetos.blogmultiplatform.util.parseDateString
-import com.varabyte.kobweb.compose.css.CSSTransition
+import com.varabyte.kobweb.compose.css.Transition
 import com.varabyte.kobweb.compose.css.Cursor
 import com.varabyte.kobweb.compose.css.FontWeight
 import com.varabyte.kobweb.compose.css.ObjectFit
@@ -23,6 +23,7 @@ import com.varabyte.kobweb.compose.foundation.layout.Row
 import com.varabyte.kobweb.compose.ui.Alignment
 import com.varabyte.kobweb.compose.ui.Modifier
 import com.varabyte.kobweb.compose.ui.modifiers.border
+import com.varabyte.kobweb.compose.ui.modifiers.classNames
 import com.varabyte.kobweb.compose.ui.modifiers.borderRadius
 import com.varabyte.kobweb.compose.ui.modifiers.color
 import com.varabyte.kobweb.compose.ui.modifiers.cursor
@@ -44,7 +45,7 @@ import com.varabyte.kobweb.compose.ui.styleModifier
 import com.varabyte.kobweb.compose.ui.thenIf
 import com.varabyte.kobweb.compose.ui.toAttrs
 import com.varabyte.kobweb.silk.components.graphics.Image
-import com.varabyte.kobweb.silk.components.style.toModifier
+import com.varabyte.kobweb.silk.style.toModifier
 import com.varabyte.kobweb.silk.components.text.SpanText
 import org.jetbrains.compose.web.css.CSSColorValue
 import org.jetbrains.compose.web.css.CSSSizeValue
@@ -75,6 +76,7 @@ fun PostPreview(
     if (vertical) {
         Column(
             modifier = PostPreViewStyle.toModifier()
+                .classNames("vintage-card")
                 .then(modifier)
                 .margin(bottom = 24.px, leftRight = 8.px)
                 .fillMaxWidth(
@@ -101,7 +103,7 @@ fun PostPreview(
                         onClick(postDetails._id)
                     }
                 }
-                .transition(CSSTransition(property = TransitionProperty.All, duration = 200.ms))
+                .transition(Transition.of(property = TransitionProperty.All, duration = 200.ms))
                 .cursor(Cursor.Pointer)
         ) {
             PostContent(
@@ -121,6 +123,7 @@ fun PostPreview(
     } else {
         Row(
             modifier = PostPreViewStyle.toModifier()
+                .classNames("vintage-card")
                 .then(modifier)
                 .cursor(Cursor.Pointer)
                 .onClick { onClick(postDetails._id) }

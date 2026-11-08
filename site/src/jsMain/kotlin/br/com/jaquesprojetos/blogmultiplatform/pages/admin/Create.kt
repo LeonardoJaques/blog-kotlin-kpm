@@ -23,6 +23,7 @@ import br.com.jaquesprojetos.blogmultiplatform.util.Constants.FONT_FAMILY
 import br.com.jaquesprojetos.blogmultiplatform.util.Constants.SIDE_PANEL_WIDTH
 import br.com.jaquesprojetos.blogmultiplatform.util.Id
 import br.com.jaquesprojetos.blogmultiplatform.util.addPost
+import br.com.jaquesprojetos.blogmultiplatform.util.browserCookie
 import br.com.jaquesprojetos.blogmultiplatform.util.applyControlStyle
 import br.com.jaquesprojetos.blogmultiplatform.util.applyStyle
 import br.com.jaquesprojetos.blogmultiplatform.util.fetchSelectedPost
@@ -31,6 +32,7 @@ import br.com.jaquesprojetos.blogmultiplatform.util.getSelectedText
 import br.com.jaquesprojetos.blogmultiplatform.util.isUserLoggedIn
 import br.com.jaquesprojetos.blogmultiplatform.util.noBorder
 import br.com.jaquesprojetos.blogmultiplatform.util.updatePost
+import br.com.jaquesprojetos.blogmultiplatform.util.postBackendJson
 import com.varabyte.kobweb.browser.file.loadDataUrlFromDisk
 import com.varabyte.kobweb.compose.css.Cursor
 import com.varabyte.kobweb.compose.css.FontWeight
@@ -78,14 +80,17 @@ import com.varabyte.kobweb.silk.components.forms.SwitchSize
 import com.varabyte.kobweb.silk.components.graphics.Image
 import com.varabyte.kobweb.silk.components.layout.SimpleGrid
 import com.varabyte.kobweb.silk.components.layout.numColumns
-import com.varabyte.kobweb.silk.components.style.breakpoint.Breakpoint
-import com.varabyte.kobweb.silk.components.style.toModifier
+import com.varabyte.kobweb.silk.style.breakpoint.Breakpoint
+import com.varabyte.kobweb.silk.style.toModifier
 import com.varabyte.kobweb.silk.components.text.SpanText
 import com.varabyte.kobweb.silk.theme.breakpoint.rememberBreakpoint
 import kotlinx.browser.document
-import kotlinx.browser.localStorage
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import kotlinx.serialization.decodeFromString
+import kotlinx.serialization.json.Json
+import kotlinx.serialization.encodeToString
+import br.com.jaquesprojetos.blog.contracts.DraftReviewResponse
 import org.jetbrains.compose.web.attributes.InputType
 import org.jetbrains.compose.web.css.px
 import org.jetbrains.compose.web.dom.A
@@ -395,7 +400,7 @@ fun CreateScreen() {
                                 } else {
                                     val result = addPost(
                                         Post(
-                                            author = localStorage["username"].toString(),
+                                            author = "Admin",
                                             title = uiState.title,
                                             subtitle = uiState.subtitle,
                                             date = Date.now().toLong(),
@@ -421,6 +426,30 @@ fun CreateScreen() {
                             }
                         }
                     })
+                if (hasPostIdParam && uiState.id.isNotBlank()) {
+                    CreateButton(
+                        text = "Review draft with Tars",
+                        onClick = {
+                            scope.launch {
+                                val key = "review-${uiState.id}-${Date.now().toLong()}"
+                                val response = runCatching {
+                                    postBackendJson(
+                                        "admin/posts/${uiState.id}/tars-review",
+                                        "{}",
+                                        browserCookie("admin_csrf"),
+                                        key
+                                    )
+                                }.getOrNull()
+                                if (response?.ok == true) {
+                                    val task = runCatching { Json.decodeFromString<DraftReviewResponse>(response.body) }.getOrNull()
+                                    if (task != null) context.router.navigateTo("/admin/tars?taskId=${task.taskId}")
+                                } else {
+                                    uiState = uiState.copy(popup = true)
+                                }
+                            }
+                        }
+                    )
+                }
             }
             if (uiState.popup) {
                 Popup(

@@ -2,7 +2,7 @@ package br.com.jaquesprojetos.blogmultiplatform.util
 
 
 object Constants {
-    const val FONT_FAMILY = Res.FontFamily.Roboto.regular
+    const val FONT_FAMILY = "Georgia"
     const val SIDE_PANEL_WIDTH = 250
     const val PAGE_WIDTH = 100
     const val PAGE_WIDTH_EX = 1920

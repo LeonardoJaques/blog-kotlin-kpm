@@ -11,12 +11,10 @@ import br.com.jaquesprojetos.blogmultiplatform.models.Constants.SKIP_PARAM
 import br.com.jaquesprojetos.blogmultiplatform.models.Newsletter
 import br.com.jaquesprojetos.blogmultiplatform.models.Post
 import br.com.jaquesprojetos.blogmultiplatform.models.RandomJoke
-import br.com.jaquesprojetos.blogmultiplatform.models.User
-import br.com.jaquesprojetos.blogmultiplatform.models.UserWithoutPassword
-import com.varabyte.kobweb.browser.api
 import com.varabyte.kobweb.browser.http.http
 import kotlinx.browser.localStorage
 import kotlinx.browser.window
+import kotlinx.coroutines.await
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
@@ -24,34 +22,6 @@ import org.w3c.dom.get
 import org.w3c.dom.set
 import kotlin.js.Date
 
-
-suspend fun checkUserExistence(user: User): UserWithoutPassword? {
-    return try {
-        window.api.tryPost(
-            apiPath = "usercheck",
-            body = Json.encodeToString(user).encodeToByteArray()
-        )?.decodeToString().parseData()
-    } catch (e: Exception) {
-        println("CURRENT_USER")
-        println(e.message)
-        null
-    }
-}
-
-suspend fun checkUserId(id: String): Boolean {
-    val result = window.api.tryPost(
-        apiPath = "checkuserid",
-        body = Json.encodeToString(id).encodeToByteArray()
-    )?.decodeToString().parseData<Boolean>()
-
-    return try {
-        result
-    } catch (e: Exception) {
-        println("CURRENT_USER")
-        println(e.message)
-        false
-    }
-}
 
 suspend fun fetchRandomJoke(onComplete: (RandomJoke) -> Unit) {
     val date = localStorage["date"]
@@ -61,7 +31,7 @@ suspend fun fetchRandomJoke(onComplete: (RandomJoke) -> Unit) {
         if (dayHasPassed) {
 
             try {
-                val result = window.http.get(Constants.HUMOR_API_URL).decodeToString()
+                val result = fetchText(Constants.HUMOR_API_URL)
                 onComplete(Json.decodeFromString<RandomJoke>(result))
                 localStorage["date"] = Date.now().toString()
                 localStorage["joke"] = result
@@ -83,7 +53,7 @@ suspend fun fetchRandomJoke(onComplete: (RandomJoke) -> Unit) {
     } else {
 
         try {
-            val result = window.http.get(Constants.HUMOR_API_URL).decodeToString()
+            val result = fetchText(Constants.HUMOR_API_URL)
             onComplete(Json.decodeFromString<RandomJoke>(result))
             localStorage["date"] = Date.now().toString()
             localStorage["joke"] = result
@@ -96,28 +66,16 @@ suspend fun fetchRandomJoke(onComplete: (RandomJoke) -> Unit) {
 }
 
 suspend fun addPost(post: Post): Boolean {
-    return try {
-        window.api.tryPost(
-            apiPath = "addpost",
-            body = Json.encodeToString(post).encodeToByteArray()
-        )?.decodeToString().parseData<Boolean>()
-    } catch (e: Exception) {
-        println("Error: ${e.message}")
-        false
-    }
+    return runCatching {
+        postBackendJson("admin/posts", Json.encodeToString(post), browserCookie("admin_csrf")).ok
+    }.getOrDefault(false)
 
 }
 
 suspend fun updatePost(post: Post): Boolean {
-    return try {
-        window.api.tryPost(
-            apiPath = "updatepost",
-            body = Json.encodeToString(post).encodeToByteArray()
-        )?.decodeToString().toBoolean()
-    } catch (e: Exception) {
-        println("Error: ${e.message}")
-        false
-    }
+    return runCatching {
+        putBackendJson("admin/posts/${encodeQuery(post._id)}", Json.encodeToString(post), browserCookie("admin_csrf")).ok
+    }.getOrDefault(false)
 }
 
 suspend fun fetchMainPosts(
@@ -125,9 +83,7 @@ suspend fun fetchMainPosts(
     onError: (Exception) -> Unit,
 ){
     try {
-     val result = window.api.tryGet(
-            apiPath = "readmainposts"
-        )?.decodeToString()
+     val result = apiGet("posts?section=main")
         onSuccess(result.parseData())
     } catch (e: Exception) {
         println(e)
@@ -141,9 +97,7 @@ suspend fun fetchLatestPosts(
     onError: (Exception) -> Unit,
 ){
     try {
-        val result = window.api.tryGet(
-            apiPath = "readlastetposts?${SKIP_PARAM}=$skip"
-        )?.decodeToString()
+        val result = apiGet("posts?section=latest&page=${skip / 9}")
         onSuccess(result.parseData())
     } catch (e: Exception) {
         println(e.message)
@@ -157,9 +111,7 @@ suspend fun fetchPopularPosts(
     onError: (Exception) -> Unit,
 ){
     try {
-        val result = window.api.tryGet(
-            apiPath = "readpopularposts?${SKIP_PARAM}=$skip"
-        )?.decodeToString()
+        val result = apiGet("posts?section=popular&page=${skip / 9}")
         onSuccess(result.parseData())
     } catch (e: Exception) {
         println(e.message)
@@ -172,9 +124,7 @@ suspend fun fetchSponsoredPosts(
     onError: (Exception) -> Unit,
 ){
     try {
-        val result = window.api.tryGet(
-            apiPath = "readsponsoredposts"
-        )?.decodeToString()
+        val result = apiGet("posts?section=sponsored")
         onSuccess(result.parseData())
     } catch (e: Exception) {
         println(e.message)
@@ -187,27 +137,17 @@ suspend fun fetchMyPosts(
     onSuccess: (ApiListResponse) -> Unit,
     onError: (Exception) -> Unit,
 ) {
-    return try {
-        val result = window.api.tryGet(
-            apiPath = "readmyposts?${SKIP_PARAM}=$skip&${AUTHOR_PARAM}=${localStorage["username"]}",
-        )?.decodeToString()
-        onSuccess(result.parseData())
-    } catch (e: Exception) {
-        onError(e)
-    }
+    runCatching {
+        val response = getBackend("admin/posts?status=draft")
+        if (!response.ok) throw IllegalStateException("Admin session is required")
+        onSuccess(response.body.parseData())
+    }.onFailure { onError(Exception(it.message ?: "Could not load drafts")) }
 }
 
 suspend fun deleteSelectedPosts(ids: List<String>): Boolean {
-    return try {
-     window.api.tryPost(
-            apiPath = "deleteselectedposts",
-            body = Json.encodeToString(ids).encodeToByteArray()
-        )?.decodeToString()
-        true
-    } catch (e: Exception) {
-        println(e.message)
-        false
-    }
+    return runCatching {
+        postBackendJson("admin/posts/delete", Json.encodeToString(ids), browserCookie("admin_csrf")).ok
+    }.getOrDefault(false)
 }
 
 suspend fun searchPostByTitle(
@@ -217,9 +157,7 @@ suspend fun searchPostByTitle(
     onError: (Exception) -> Unit,
 ) {
     return try {
-        val result = window.api.tryGet(
-            apiPath = "searchpostbytitle?${QUERY_PARAM}=$query&${SKIP_PARAM}=$skip",
-        )?.decodeToString()
+        val result = apiGet("posts?section=latest&page=${skip / 9}&q=${encodeQuery(query)}")
         onSuccess(result.parseData())
     } catch (e: Exception) {
         println(e.message)
@@ -234,9 +172,7 @@ suspend fun searchPostsByCategory(
     onError: (Exception) -> Unit,
 ) {
     return try {
-        val result = window.api.tryGet(
-            apiPath = "searchpostbycategory?${CATEGORY_PARAM}=${category.name}&${SKIP_PARAM}=$skip",
-        )?.decodeToString()
+        val result = apiGet("posts?section=latest&page=${skip / 9}&category=${encodeQuery(category.name)}")
         onSuccess(result.parseData())
     } catch (e: Exception) {
         println(e.message)
@@ -246,10 +182,29 @@ suspend fun searchPostsByCategory(
 
 suspend fun fetchSelectedPost(id: String): ApiResponse {
     return try {
-        val result = window.api.tryGet(
-            apiPath = "readselectedpost?${POST_ID_PARAM}=$id"
-        )?.decodeToString()
-        result?.parseData<ApiResponse>() ?: ApiResponse.Error(message = "Result is null")
+        val publicResponse = getBackend("posts/${encodeQuery(id)}")
+        val details = if (publicResponse.ok) {
+            Json.decodeFromString<br.com.jaquesprojetos.blog.contracts.PostDetailsResponse>(publicResponse.body).data
+        } else {
+            val adminResponse = getBackend("admin/posts/${encodeQuery(id)}")
+            if (!adminResponse.ok) throw IllegalStateException("Post was not found")
+            Json.decodeFromString<br.com.jaquesprojetos.blog.contracts.PostDetails>(adminResponse.body)
+        }
+        ApiResponse.Success(
+            Post(
+                _id = details.id,
+                author = details.author,
+                title = details.title,
+                subtitle = details.subtitle,
+                date = details.date,
+                thumbnail = details.thumbnail,
+                content = details.content,
+                category = Category.valueOf(details.category),
+                popular = details.popular,
+                main = details.main,
+                sponsored = details.sponsored,
+            )
+        )
     } catch (e: Exception) {
         println(e)
         ApiResponse.Error(message = e.message.toString())
@@ -257,11 +212,28 @@ suspend fun fetchSelectedPost(id: String): ApiResponse {
 }
 
 suspend fun subscribeToNewsletter(newsletter: Newsletter): String {
-    return window.api.tryPost(
-        apiPath = "subscribe",
-        body = Json.encodeToString(newsletter).encodeToByteArray()
-    )?.decodeToString().toString().replace("\"", "")
+    return try {
+        val response = postBackendJson("newsletter", Json.encodeToString(newsletter))
+        if (!response.ok) "Subscription could not be completed. Please try again later."
+        else Json.decodeFromString<br.com.jaquesprojetos.blog.contracts.MessageResponse>(response.body).message
+    } catch (e: Exception) {
+        "Subscription could not be completed. Please try again later."
+    }
 }
+
+private suspend fun apiGet(path: String): String {
+    val response = getBackend(path)
+    if (!response.ok) throw IllegalStateException("Request failed with status ${response.status}")
+    return response.body
+}
+
+private suspend fun fetchText(url: String): String {
+    val response = window.fetch(url).await()
+    if (!response.ok) throw IllegalStateException("Request failed with status ${response.status}")
+    return response.text().await()
+}
+
+private fun encodeQuery(value: String): String = js("encodeURIComponent(value)") as String
 
 inline fun <reified T> String?.parseData(): T {
     return Json.decodeFromString(this.toString())

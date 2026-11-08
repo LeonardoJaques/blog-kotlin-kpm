@@ -13,22 +13,25 @@ import com.varabyte.kobweb.compose.foundation.layout.Row
 import com.varabyte.kobweb.compose.ui.Alignment
 import com.varabyte.kobweb.compose.ui.Modifier
 import com.varabyte.kobweb.compose.ui.modifiers.backgroundColor
+import com.varabyte.kobweb.compose.ui.modifiers.classNames
 import com.varabyte.kobweb.compose.ui.modifiers.fillMaxWidth
 import com.varabyte.kobweb.compose.ui.modifiers.margin
 import com.varabyte.kobweb.compose.ui.modifiers.maxWidth
-import com.varabyte.kobweb.silk.components.style.breakpoint.Breakpoint
+import com.varabyte.kobweb.silk.style.breakpoint.Breakpoint
 import org.jetbrains.compose.web.css.percent
 import org.jetbrains.compose.web.css.px
 
 @Composable
 fun MainSection(
     posts: ApiListResponse,
+    fallbackPosts: List<PostWithoutDetails>,
     breakpoint: Breakpoint,
     onClick: (String) -> Unit,
 ) {
     Box(
         modifier = Modifier
             .fillMaxWidth()
+            .classNames("vintage-hero")
             .backgroundColor(Theme.Secondary.rgb),
         contentAlignment = Alignment.Center,
     ) {
@@ -45,11 +48,14 @@ fun MainSection(
                 }
 
                 is ApiListResponse.Success -> {
-                    MainPosts(
-                        breakpoint = breakpoint,
-                        posts = posts.data,
-                        onClick = onClick
-                    )
+                    val visiblePosts = posts.data.ifEmpty { fallbackPosts }
+                    if (visiblePosts.isNotEmpty()) {
+                        MainPosts(
+                            breakpoint = breakpoint,
+                            posts = visiblePosts,
+                            onClick = onClick
+                        )
+                    }
                 }
 
                 is ApiListResponse.Error -> {
@@ -77,7 +83,7 @@ fun MainPosts(
             breakpoint == Breakpoint.XL -> {
                 PostPreview(
                     postDetails = posts.first(),
-                    darkTheme = true,
+                    darkTheme = false,
                     vertical = true,
                     thumbnailHeight = 595.px,
                     onClick = { onClick(posts.first()._id) }
@@ -91,7 +97,7 @@ fun MainPosts(
                     posts.drop(1).forEach { postDetails ->
                         PostPreview(
                             postDetails = postDetails,
-                            darkTheme = true,
+                            darkTheme = false,
                             vertical = false,
                             thumbnailHeight = 175.px,
                             modifier = Modifier
@@ -108,7 +114,7 @@ fun MainPosts(
                 posts.take(2).forEach { postDetails ->
                     PostPreview(
                         postDetails = postDetails,
-                        darkTheme = true,
+                        darkTheme = false,
                         vertical = true,
                         onClick = { onClick(postDetails._id)}
                     )
@@ -119,7 +125,7 @@ fun MainPosts(
                 posts.take(1).forEach { postDetails ->
                     PostPreview(
                         postDetails = postDetails,
-                        darkTheme = true,
+                        darkTheme = false,
                         vertical = true,
                         onClick = { onClick(postDetails._id)}
 
@@ -131,7 +137,7 @@ fun MainPosts(
                 posts.forEach { postDetails ->
                     PostPreview(
                         postDetails = postDetails,
-                        darkTheme = true,
+                        darkTheme = false,
                         vertical = true,
                         onClick = { onClick(postDetails._id)}
                     )
