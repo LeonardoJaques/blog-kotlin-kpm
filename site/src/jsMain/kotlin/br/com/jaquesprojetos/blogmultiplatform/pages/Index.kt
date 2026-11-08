@@ -19,12 +19,10 @@ import br.com.jaquesprojetos.blogmultiplatform.sections.HeaderSection
 import br.com.jaquesprojetos.blogmultiplatform.sections.MainSection
 import br.com.jaquesprojetos.blogmultiplatform.sections.NewsletterSection
 import br.com.jaquesprojetos.blogmultiplatform.sections.PostsSection
-import br.com.jaquesprojetos.blogmultiplatform.sections.SponsoredSection
 import br.com.jaquesprojetos.blogmultiplatform.util.Res.Image.logo
 import br.com.jaquesprojetos.blogmultiplatform.util.fetchLatestPosts
 import br.com.jaquesprojetos.blogmultiplatform.util.fetchMainPosts
 import br.com.jaquesprojetos.blogmultiplatform.util.fetchPopularPosts
-import br.com.jaquesprojetos.blogmultiplatform.util.fetchSponsoredPosts
 import com.varabyte.kobweb.compose.foundation.layout.Arrangement
 import com.varabyte.kobweb.compose.foundation.layout.Column
 import com.varabyte.kobweb.compose.ui.Alignment
@@ -47,7 +45,6 @@ fun HomePage() {
     val context = rememberPageContext()
 
     val latestPosts = remember { mutableStateListOf<PostWithoutDetails>() }
-    val sponsoredPosts = remember { mutableStateListOf<PostWithoutDetails>() }
     val popularPosts = remember { mutableStateListOf<PostWithoutDetails>() }
 
     var mainPosts by remember { mutableStateOf<ApiListResponse>(ApiListResponse.Idle) }
@@ -81,11 +78,6 @@ fun HomePage() {
                             popularPostsToSkip += POSTS_PER_PAGE
                             if (response.data.size >= POSTS_PER_PAGE) showMorePopularPosts = true
                         }
-                    }, onError = {})
-                },
-                async {
-                    fetchSponsoredPosts(onSuccess = { response ->
-                        if (response is ApiListResponse.Success) sponsoredPosts.addAll(response.data)
                     }, onError = {})
                 }
             ).awaitAll()
@@ -146,12 +138,6 @@ fun HomePage() {
                     )
                 }
             },
-            onClick = { context.router.navigateTo(Screen.PostPage.getPost(id = it)) }
-        )
-
-        SponsoredSection(
-            breakpoint = breakpoint,
-            posts = sponsoredPosts,
             onClick = { context.router.navigateTo(Screen.PostPage.getPost(id = it)) }
         )
 

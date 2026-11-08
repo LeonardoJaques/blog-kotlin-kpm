@@ -48,7 +48,7 @@ fun LoginScreen() {
                 src = Res.Image.logo,
                 description = "Logo image",
             )
-            SpanText("Administração protegida por Authelia")
+            SpanText("Admin access protected by Authelia")
             Button(
                 attrs = Modifier
                     .margin(top = 24.px)
@@ -70,7 +70,7 @@ fun LoginScreen() {
                     }
                     .toAttrs(),
             ) {
-                SpanText("Entrar com Authelia")
+                SpanText("Continue with Authelia")
             }
         }
     }

@@ -210,6 +210,50 @@
   font-family: Georgia, "Times New Roman", serif !important;
 }
 
+.vintage-site button,
+.vintage-site a[role="button"] {
+  position: relative;
+  border: 3px solid var(--ink) !important;
+  border-radius: 13px 10px 15px 11px !important;
+  box-shadow: 3px 4px 0 var(--ink) !important;
+  background-image: radial-gradient(rgba(255, 255, 255, .2) 1px, transparent 1.6px) !important;
+  background-size: 8px 8px !important;
+  font-family: Georgia, "Times New Roman", serif !important;
+  font-weight: 700 !important;
+  transition: transform .14s ease, box-shadow .14s ease, filter .14s ease;
+  transform: rotate(-.7deg);
+}
+
+.vintage-site button:nth-of-type(even),
+.vintage-site a[role="button"]:nth-of-type(even) {
+  transform: rotate(.7deg);
+}
+
+.vintage-site button:hover,
+.vintage-site a[role="button"]:hover {
+  filter: brightness(1.08) saturate(1.05);
+  box-shadow: 4px 6px 0 var(--ink) !important;
+  transform: translateY(-2px) rotate(0deg);
+}
+
+.vintage-site button:active,
+.vintage-site a[role="button"]:active {
+  box-shadow: 1px 2px 0 var(--ink) !important;
+  transform: translate(2px, 2px) rotate(0deg);
+}
+
+.vintage-site button:focus-visible,
+.vintage-site a[role="button"]:focus-visible {
+  outline: 3px dashed var(--rust) !important;
+  outline-offset: 4px;
+}
+
+.vintage-site button:disabled {
+  cursor: not-allowed;
+  filter: grayscale(.55);
+  opacity: .7;
+}
+
 @media (max-width: 768px) {
   .vintage-hero::before {
     width: 90%;
@@ -232,6 +276,14 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
+  .vintage-site button,
+  .vintage-site a[role="button"],
+  .vintage-site button:hover,
+  .vintage-site a[role="button"]:hover {
+    transition: none;
+    transform: none;
+  }
+
   .vintage-card,
   .vintage-card:hover {
     transform: none;
