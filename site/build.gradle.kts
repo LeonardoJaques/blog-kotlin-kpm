@@ -56,7 +56,7 @@ val versionProductionScript by tasks.registering(Copy::class) {
     from(layout.buildDirectory.file("kotlin-webpack/js/productionExecutable/blogmultiplatform.js"))
     from(layout.buildDirectory.file("kotlin-webpack/js/productionExecutable/blogmultiplatform.js.map"))
     into(layout.buildDirectory.dir("kotlin-webpack/js/productionExecutable"))
-    rename { original -> original.replace("blogmultiplatform", "blogmultiplatform-vintage5") }
+    rename { original -> original.replace("blogmultiplatform", "blogmultiplatform-vintage6") }
 }
 
 tasks.named("kobwebExport") {
@@ -66,7 +66,7 @@ tasks.named("kobwebExport") {
         exportedIndex.writeText(
             exportedIndex.readText().replace(
                 "/ljblog/blogmultiplatform.js",
-                "/ljblog/blogmultiplatform-vintage5.js"
+                "/ljblog/blogmultiplatform-vintage6.js"
             )
         )
     }
@@ -75,10 +75,10 @@ tasks.named("kobwebExport") {
 tasks.register("publishVersionedScript") {
     dependsOn("kobwebExport")
     doLast {
-        val versionedScript = layout.buildDirectory.file("kotlin-webpack/js/productionExecutable/blogmultiplatform-vintage5.js").get().asFile
-        val versionedMap = layout.buildDirectory.file("kotlin-webpack/js/productionExecutable/blogmultiplatform-vintage5.js.map").get().asFile
+        val versionedScript = layout.buildDirectory.file("kotlin-webpack/js/productionExecutable/blogmultiplatform-vintage6.js").get().asFile
+        val versionedMap = layout.buildDirectory.file("kotlin-webpack/js/productionExecutable/blogmultiplatform-vintage6.js.map").get().asFile
         val resourcesDirectory = layout.projectDirectory.dir(".kobweb/site/resources").asFile
-        versionedScript.copyTo(resourcesDirectory.resolve("blogmultiplatform-vintage5.js"), overwrite = true)
+        versionedScript.copyTo(resourcesDirectory.resolve("blogmultiplatform-vintage6.js"), overwrite = true)
         versionedMap.copyTo(resourcesDirectory.resolve("blogmultiplatform.js.map"), overwrite = true)
     }
 }

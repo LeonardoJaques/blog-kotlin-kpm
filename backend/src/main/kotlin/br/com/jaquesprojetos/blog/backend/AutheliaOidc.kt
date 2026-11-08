@@ -22,7 +22,9 @@ import java.time.Instant
 import java.util.Base64
 import java.util.UUID
 import kotlinx.serialization.json.Json
-import kotlinx.serialization.json.jsonArray
+import kotlinx.serialization.json.JsonArray
+import kotlinx.serialization.json.JsonPrimitive
+import kotlinx.serialization.json.contentOrNull
 import kotlinx.serialization.json.jsonObject
 import kotlinx.serialization.json.jsonPrimitive
 
@@ -99,13 +101,7 @@ class AutheliaOidc(
             throw OidcCallbackFailure("discovery")
         }
         val basic = basicAuthCredentials(clientId!!, clientSecret!!)
-        val form = listOf(
-            "grant_type" to "authorization_code",
-            "code" to code,
-            "redirect_uri" to redirectUri!!,
-            "client_id" to clientId!!,
-            "code_verifier" to transaction.verifier,
-        ).joinToString("&") { (key, value) -> "${encode(key)}=${encode(value)}" }
+        val form = authorizationCodeTokenForm(code, redirectUri!!, transaction.verifier)
         val tokenJson = try {
             request(
                 HttpRequest.newBuilder(URI(metadata.tokenEndpoint))
@@ -118,13 +114,26 @@ class AutheliaOidc(
         } catch (_: Exception) {
             throw OidcCallbackFailure("token_exchange")
         }
-        val idToken = Json.parseToJsonElement(tokenJson).jsonObject["id_token"]?.jsonPrimitive?.content
+        val tokenResponse = try {
+            Json.parseToJsonElement(tokenJson).jsonObject
+        } catch (_: Exception) {
+            throw OidcCallbackFailure("token_response_parse")
+        }
+        val idToken = tokenResponse["id_token"]?.jsonPrimitive?.content
             ?: throw OidcCallbackFailure("id_token_missing")
+        val accessToken = tokenResponse["access_token"]?.jsonPrimitive?.content
+            ?: throw OidcCallbackFailure("access_token_missing")
         val claims = verifyIdToken(idToken, metadata.jwksUri, transaction.nonceHash)
             ?: throw OidcCallbackFailure("id_token_verification")
         val subject = claims.subject ?: throw OidcCallbackFailure("subject_missing")
-        val groups = claimGroups(claims.getClaim("groups"))
-        if (adminGroup !in groups) throw OidcCallbackFailure("admin_group")
+        val userInfoBody = try {
+            request(userInfoRequest(metadata.userInfoEndpoint, accessToken))
+        } catch (_: Exception) {
+            throw OidcCallbackFailure("userinfo")
+        }
+        val userInfo = parseUserInfoClaims(userInfoBody, subject)
+        val groups = userInfo.groups
+        requireAdminGroup(groups, adminGroup)
 
         val expiresAt = minOf(claims.expirationTime?.toInstant() ?: Instant.now(), Instant.now().plus(Duration.ofHours(8)))
         if (!expiresAt.isAfter(Instant.now())) throw OidcCallbackFailure("token_expired")
@@ -176,11 +185,14 @@ class AutheliaOidc(
         val authorizationEndpoint = json.getValue("authorization_endpoint").jsonPrimitive.content
         val tokenEndpoint = json.getValue("token_endpoint").jsonPrimitive.content
         val jwksUri = json.getValue("jwks_uri").jsonPrimitive.content
-        require(isTrustedEndpoint(authorizationEndpoint) && isTrustedEndpoint(tokenEndpoint) && isTrustedEndpoint(jwksUri))
+        val userInfoEndpoint = json.getValue("userinfo_endpoint").jsonPrimitive.content
+        require(isTrustedEndpoint(authorizationEndpoint) && isTrustedEndpoint(tokenEndpoint) &&
+            isTrustedEndpoint(jwksUri) && isTrustedEndpoint(userInfoEndpoint))
         return OidcMetadata(
             authorizationEndpoint,
             tokenEndpoint,
             jwksUri,
+            userInfoEndpoint,
         )
     }
 
@@ -209,12 +221,6 @@ class AutheliaOidc(
         claims
     }.getOrNull()
 
-    private fun claimGroups(claim: Any?): Set<String> = when (claim) {
-        is Collection<*> -> claim.filterIsInstance<String>().toSet()
-        is String -> setOf(claim)
-        else -> emptySet()
-    }
-
     private fun request(request: HttpRequest): String {
         val response = http.send(request, HttpResponse.BodyHandlers.ofString())
         require(response.statusCode() in 200..299) { "OIDC provider returned ${response.statusCode()}" }
@@ -232,7 +238,43 @@ class AutheliaOidc(
 
     data class AdminSession(val token: String, val subject: String)
     private data class OidcTransaction(val nonceHash: ByteArray, val verifier: String)
-    private data class OidcMetadata(val authorizationEndpoint: String, val tokenEndpoint: String, val jwksUri: String)
+    private data class OidcMetadata(
+        val authorizationEndpoint: String,
+        val tokenEndpoint: String,
+        val jwksUri: String,
+        val userInfoEndpoint: String,
+    )
+}
+
+internal data class OidcUserInfo(val subject: String, val groups: Set<String>)
+
+internal fun requireAdminGroup(groups: Set<String>, adminGroup: String) {
+    if (adminGroup !in groups) throw OidcCallbackFailure("admin_group")
+}
+
+internal fun userInfoRequest(endpoint: String, accessToken: String): HttpRequest =
+    HttpRequest.newBuilder(URI(endpoint))
+        .timeout(Duration.ofSeconds(5))
+        .header("Authorization", "Bearer $accessToken")
+        .header("Accept", "application/json")
+        .GET()
+        .build()
+
+internal fun parseUserInfoClaims(body: String, expectedSubject: String): OidcUserInfo {
+    val json = try {
+        Json.parseToJsonElement(body).jsonObject
+    } catch (_: Exception) {
+        throw OidcCallbackFailure("userinfo_parse")
+    }
+    val subject = json["sub"]?.jsonPrimitive?.contentOrNull
+        ?: throw OidcCallbackFailure("userinfo_subject_missing")
+    if (subject != expectedSubject) throw OidcCallbackFailure("userinfo_subject_mismatch")
+    val groups = when (val claim = json["groups"]) {
+        is JsonArray -> claim.mapNotNull { (it as? JsonPrimitive)?.takeIf(JsonPrimitive::isString)?.content }.toSet()
+        is JsonPrimitive -> if (claim.isString) setOf(claim.content) else emptySet()
+        else -> emptySet()
+    }
+    return OidcUserInfo(subject, groups)
 }
 
 internal fun basicAuthCredentials(clientId: String, clientSecret: String): String =
@@ -240,5 +282,15 @@ internal fun basicAuthCredentials(clientId: String, clientSecret: String): Strin
         "${URLEncoder.encode(clientId, StandardCharsets.UTF_8)}:${URLEncoder.encode(clientSecret, StandardCharsets.UTF_8)}"
             .toByteArray(StandardCharsets.UTF_8)
     )
+
+internal fun authorizationCodeTokenForm(code: String, redirectUri: String, verifier: String): String =
+    listOf(
+        "grant_type" to "authorization_code",
+        "code" to code,
+        "redirect_uri" to redirectUri,
+        "code_verifier" to verifier,
+    ).joinToString("&") { (key, value) ->
+        "${URLEncoder.encode(key, StandardCharsets.UTF_8)}=${URLEncoder.encode(value, StandardCharsets.UTF_8)}"
+    }
 
 internal class OidcCallbackFailure(val stage: String) : RuntimeException(stage)

@@ -8,9 +8,12 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import br.com.jaquesprojetos.blogmultiplatform.models.Theme
+import br.com.jaquesprojetos.blogmultiplatform.navigation.Screen
+import br.com.jaquesprojetos.blogmultiplatform.util.Res
 import br.com.jaquesprojetos.blogmultiplatform.util.browserCookie
 import br.com.jaquesprojetos.blogmultiplatform.util.getBackend
 import br.com.jaquesprojetos.blogmultiplatform.util.postBackendJson
+import com.varabyte.kobweb.compose.css.Cursor
 import com.varabyte.kobweb.compose.foundation.layout.Arrangement
 import com.varabyte.kobweb.compose.foundation.layout.Column
 import com.varabyte.kobweb.compose.foundation.layout.Row
@@ -19,6 +22,7 @@ import com.varabyte.kobweb.compose.ui.Modifier
 import com.varabyte.kobweb.compose.ui.modifiers.backgroundColor
 import com.varabyte.kobweb.compose.ui.modifiers.borderRadius
 import com.varabyte.kobweb.compose.ui.modifiers.color
+import com.varabyte.kobweb.compose.ui.modifiers.cursor
 import com.varabyte.kobweb.compose.ui.modifiers.fillMaxWidth
 import com.varabyte.kobweb.compose.ui.modifiers.margin
 import com.varabyte.kobweb.compose.ui.modifiers.id
@@ -27,6 +31,8 @@ import com.varabyte.kobweb.compose.ui.modifiers.padding
 import com.varabyte.kobweb.compose.ui.modifiers.width
 import com.varabyte.kobweb.compose.ui.toAttrs
 import com.varabyte.kobweb.core.Page
+import com.varabyte.kobweb.core.rememberPageContext
+import com.varabyte.kobweb.silk.components.graphics.Image
 import com.varabyte.kobweb.silk.components.text.SpanText
 import kotlinx.browser.document
 import kotlinx.browser.window
@@ -43,6 +49,7 @@ import org.w3c.dom.HTMLInputElement
 @Composable
 fun AccountPage() {
     val scope = rememberCoroutineScope()
+    val context = rememberPageContext()
     var message by remember { mutableStateOf("Sign in or create an account to save favorites and comment.") }
     var signedIn by remember { mutableStateOf(false) }
     val verifyToken = window.location.search.substringAfter("verify=", "").substringBefore('&').takeIf(String::isNotBlank)
@@ -63,6 +70,12 @@ fun AccountPage() {
         }
     }
     Column(Modifier.width(640.px).fillMaxWidth().padding(24.px), horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.Top) {
+        Image(
+            modifier = Modifier.width(190.px).margin(bottom = 20.px).cursor(Cursor.Pointer)
+                .onClick { context.router.navigateTo(Screen.HomePage.route) },
+            src = Res.Image.logoHome,
+            description = "Convergencia Blog home",
+        )
         SpanText("Reader account")
         Input(InputType.Email, attrs = Modifier.id("reader-email").fillMaxWidth().padding(12.px).toAttrs { attr("placeholder", "Email") })
         Input(InputType.Password, attrs = Modifier.id("reader-password").fillMaxWidth().padding(12.px).toAttrs { attr("placeholder", "Password (at least 12 characters)") })
