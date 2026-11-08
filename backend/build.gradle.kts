@@ -42,4 +42,13 @@ dependencies {
     implementation(libs.nimbus.jose.jwt)
     runtimeOnly("ch.qos.logback:logback-classic:1.5.6")
     testImplementation(kotlin("test"))
+    testImplementation(libs.ktor.server.test.host)
+}
+
+tasks.register<JavaExec>("authFlowsPostgresSmoke") {
+    group = "verification"
+    description = "Runs admin OIDC session and reader login flows against an isolated PostgreSQL database."
+    dependsOn(tasks.named("testClasses"))
+    classpath = sourceSets.test.get().runtimeClasspath
+    mainClass.set("br.com.jaquesprojetos.blog.backend.AdminAuthStorePostgresSmoke")
 }

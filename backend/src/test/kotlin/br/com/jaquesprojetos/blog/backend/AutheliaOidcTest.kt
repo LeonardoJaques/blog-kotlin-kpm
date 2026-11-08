@@ -84,4 +84,12 @@ class AutheliaOidcTest {
         }
         assertEquals("admin_group", failure.stage)
     }
+
+    @Test
+    fun `csrf requires a matching cookie and request header`() {
+        assertTrue(csrfTokensMatch("csrf-random-value", "csrf-random-value"))
+        assertFalse(csrfTokensMatch("csrf-random-value", "different-value"))
+        assertFalse(csrfTokensMatch("csrf-random-value", null))
+        assertFalse(csrfTokensMatch(null, "csrf-random-value"))
+    }
 }

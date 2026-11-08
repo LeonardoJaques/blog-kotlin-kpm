@@ -29,7 +29,7 @@ import kotlinx.serialization.json.jsonObject
 import kotlinx.serialization.json.jsonPrimitive
 
 class AutheliaOidc(
-    private val database: Database,
+    private val store: AdminAuthStore,
     private val environment: Map<String, String> = System.getenv(),
 ) {
     private val issuer get() = environment["OIDC_ISSUER"]?.trimEnd('/')
@@ -51,17 +51,7 @@ class AutheliaOidc(
         val nonce = randomValue()
         val verifier = randomValue() + randomValue()
         val challenge = Base64.getUrlEncoder().withoutPadding().encodeToString(sha256(verifier.toByteArray()))
-        database.query { connection ->
-            connection.prepareStatement(
-                "INSERT INTO oidc_transactions(state_hash, nonce_hash, pkce_verifier, expires_at) VALUES (?, ?, ?, now() + interval '10 minutes')"
-            ).use {
-                it.setBytes(1, sha256(state.toByteArray()))
-                it.setBytes(2, sha256(nonce.toByteArray()))
-                it.setString(3, verifier)
-                it.executeUpdate()
-            }
-            connection.prepareStatement("DELETE FROM oidc_transactions WHERE expires_at <= now()").use { it.executeUpdate() }
-        }
+        store.insertOidcTransaction(sha256(state.toByteArray()), sha256(nonce.toByteArray()), verifier)
         return metadata.authorizationEndpoint + "?" + listOf(
             "response_type" to "code",
             "scope" to "openid profile email groups",
@@ -76,23 +66,10 @@ class AutheliaOidc(
 
     fun complete(state: String, code: String): AdminSession? {
         check(configured()) { "OIDC is not configured" }
-        val transaction = database.query { connection ->
-            connection.autoCommit = false
-            try {
-                val row = connection.prepareStatement(
-                    "DELETE FROM oidc_transactions WHERE state_hash = ? AND expires_at > now() RETURNING nonce_hash, pkce_verifier"
-                ).use {
-                    it.setBytes(1, sha256(state.toByteArray()))
-                    it.executeQuery().use { rows -> if (rows.next()) OidcTransaction(rows.getBytes(1), rows.getString(2)) else null }
-                }
-                connection.commit()
-                row
-            } catch (failure: Exception) {
-                connection.rollback()
-                throw failure
-            } finally {
-                connection.autoCommit = true
-            }
+        val transaction = try {
+            store.consumeOidcTransaction(sha256(state.toByteArray()))
+        } catch (_: Exception) {
+            throw OidcCallbackFailure("state_store")
         } ?: throw OidcCallbackFailure("state")
 
         val metadata = try {
@@ -119,10 +96,8 @@ class AutheliaOidc(
         } catch (_: Exception) {
             throw OidcCallbackFailure("token_response_parse")
         }
-        val idToken = tokenResponse["id_token"]?.jsonPrimitive?.content
-            ?: throw OidcCallbackFailure("id_token_missing")
-        val accessToken = tokenResponse["access_token"]?.jsonPrimitive?.content
-            ?: throw OidcCallbackFailure("access_token_missing")
+        val idToken = tokenResponse.stringValue("id_token") ?: throw OidcCallbackFailure("id_token_missing")
+        val accessToken = tokenResponse.stringValue("access_token") ?: throw OidcCallbackFailure("access_token_missing")
         val claims = verifyIdToken(idToken, metadata.jwksUri, transaction.nonceHash)
             ?: throw OidcCallbackFailure("id_token_verification")
         val subject = claims.subject ?: throw OidcCallbackFailure("subject_missing")
@@ -138,42 +113,23 @@ class AutheliaOidc(
         val expiresAt = minOf(claims.expirationTime?.toInstant() ?: Instant.now(), Instant.now().plus(Duration.ofHours(8)))
         if (!expiresAt.isAfter(Instant.now())) throw OidcCallbackFailure("token_expired")
         val sessionToken = randomValue()
-        database.query { connection ->
-            connection.prepareStatement("INSERT INTO admin_sessions(id_hash, subject, groups, expires_at) VALUES (?, ?, ?, ?)").use {
-                it.setBytes(1, sha256(sessionToken.toByteArray()))
-                it.setString(2, subject)
-                it.setArray(3, connection.createArrayOf("text", groups.toTypedArray()))
-                it.setObject(4, expiresAt)
-                it.executeUpdate()
-            }
+        try {
+            store.insertAdminSession(sha256(sessionToken.toByteArray()), subject, groups, expiresAt)
+        } catch (_: Exception) {
+            throw OidcCallbackFailure("session_store")
         }
         return AdminSession(sessionToken, subject)
     }
 
     fun session(token: String?): AdminSession? {
         if (token.isNullOrBlank()) return null
-        return database.query { connection ->
-            connection.prepareStatement("SELECT subject, groups FROM admin_sessions WHERE id_hash = ? AND revoked_at IS NULL AND expires_at > now()").use {
-                it.setBytes(1, sha256(token.toByteArray()))
-                it.executeQuery().use { rows ->
-                    if (!rows.next()) null
-                    else {
-                        val groups = (rows.getArray("groups").array as Array<*>).map { it.toString() }
-                        if (adminGroup in groups) AdminSession(token, rows.getString("subject")) else null
-                    }
-                }
-            }
-        }
+        val stored = store.findAdminSession(sha256(token.toByteArray())) ?: return null
+        return if (adminGroup in stored.groups) AdminSession(token, stored.subject) else null
     }
 
     fun revoke(token: String?) {
         if (token.isNullOrBlank()) return
-        database.query { connection ->
-            connection.prepareStatement("UPDATE admin_sessions SET revoked_at = now() WHERE id_hash = ? AND revoked_at IS NULL").use {
-                it.setBytes(1, sha256(token.toByteArray()))
-                it.executeUpdate()
-            }
-        }
+        store.revokeAdminSession(sha256(token.toByteArray()))
     }
 
     private fun discovery(): OidcMetadata {
@@ -237,7 +193,6 @@ class AutheliaOidc(
     }.getOrDefault(false)
 
     data class AdminSession(val token: String, val subject: String)
-    private data class OidcTransaction(val nonceHash: ByteArray, val verifier: String)
     private data class OidcMetadata(
         val authorizationEndpoint: String,
         val tokenEndpoint: String,
@@ -245,6 +200,9 @@ class AutheliaOidc(
         val userInfoEndpoint: String,
     )
 }
+
+private fun kotlinx.serialization.json.JsonObject.stringValue(name: String): String? =
+    (this[name] as? JsonPrimitive)?.takeIf(JsonPrimitive::isString)?.content
 
 internal data class OidcUserInfo(val subject: String, val groups: Set<String>)
 

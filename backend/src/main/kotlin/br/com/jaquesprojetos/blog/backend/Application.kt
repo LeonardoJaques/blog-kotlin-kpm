@@ -40,6 +40,7 @@ import io.ktor.server.routing.get
 import io.ktor.server.routing.delete
 import io.ktor.server.routing.post
 import io.ktor.server.routing.put
+import io.ktor.server.routing.Route
 import io.ktor.server.routing.route
 import io.ktor.server.routing.routing
 import kotlinx.serialization.decodeFromString
@@ -140,26 +141,8 @@ fun Application.module() {
                 if (!adminAuth.configured()) call.respond(HttpStatusCode.ServiceUnavailable, ErrorResponse("oidc_not_configured", "Authelia OIDC is not configured"))
                 else call.respondRedirect(onIo { adminAuth.authorizationUrl() })
             }
-            get("/admin/callback") {
-                val state = call.request.queryParameters["state"].orEmpty()
-                val code = call.request.queryParameters["code"].orEmpty()
-                val session = if (state.length <= 256 && code.length <= 4096) {
-                    try {
-                        onIo { adminAuth.complete(state, code) }
-                    } catch (failure: Exception) {
-                        val stage = (failure as? OidcCallbackFailure)?.stage ?: "unexpected"
-                        appLog.warn("Authelia OIDC callback failed at stage: $stage")
-                        null
-                    }
-                } else null
-                if (session == null) {
-                    call.respond(HttpStatusCode.Unauthorized, ErrorResponse("oidc_login_failed", "Could not complete the Authelia sign-in"))
-                } else {
-                    val csrf = UUID.randomUUID().toString() + UUID.randomUUID().toString()
-                    call.response.cookies.append(Cookie("admin_session", session.token, maxAge = 60 * 60 * 8, secure = secureCookies, httpOnly = true, extensions = mapOf("SameSite" to "Lax")))
-                    call.response.cookies.append(Cookie("admin_csrf", csrf, maxAge = 60 * 60 * 8, secure = secureCookies, httpOnly = false, extensions = mapOf("SameSite" to "Lax")))
-                    call.respondRedirect(System.getenv("WEB_BASE_URL")?.trimEnd('/')?.plus("/admin") ?: "http://localhost:8080/admin")
-                }
+            adminOidcCallback(adminAuth, secureCookies, System.getenv("WEB_BASE_URL")) { stage, failureType ->
+                appLog.warn("Authelia OIDC callback failed at stage: $stage (type: $failureType)")
             }
             get("/admin/session") {
                 val session = onIo { adminAuth.session(call.request.cookies["admin_session"]) }
@@ -441,6 +424,36 @@ fun Application.module() {
     }
 }
 
+internal fun Route.adminOidcCallback(
+    adminAuth: AutheliaOidc,
+    secureCookies: Boolean,
+    webBaseUrl: String?,
+    onFailure: (stage: String, failureType: String) -> Unit = { _, _ -> },
+) {
+    get("/admin/callback") {
+        val state = call.request.queryParameters["state"].orEmpty()
+        val code = call.request.queryParameters["code"].orEmpty()
+        val session = if (state.length <= 256 && code.length <= 4096) {
+            try {
+                onIo { adminAuth.complete(state, code) }
+            } catch (failure: Exception) {
+                val stage = (failure as? OidcCallbackFailure)?.stage ?: "unexpected"
+                val failureType = failure::class.simpleName ?: "Exception"
+                onFailure(stage, failureType)
+                null
+            }
+        } else null
+        if (session == null) {
+            call.respond(HttpStatusCode.Unauthorized, ErrorResponse("oidc_login_failed", "Could not complete the Authelia sign-in"))
+        } else {
+            val csrf = UUID.randomUUID().toString() + UUID.randomUUID().toString()
+            call.response.cookies.append(Cookie("admin_session", session.token, maxAge = 60 * 60 * 8, secure = secureCookies, httpOnly = true, extensions = mapOf("SameSite" to "Lax")))
+            call.response.cookies.append(Cookie("admin_csrf", csrf, maxAge = 60 * 60 * 8, secure = secureCookies, httpOnly = false, extensions = mapOf("SameSite" to "Lax")))
+            call.respondRedirect(webBaseUrl?.trimEnd('/')?.plus("/admin") ?: "http://localhost:8080/admin")
+        }
+    }
+}
+
 private suspend inline fun <reified T> ApplicationCall.readJson(): T = Json.decodeFromString(receiveText())
 
 private suspend fun <T> onIo(block: () -> T): T = withContext(Dispatchers.IO) { block() }
@@ -448,6 +461,11 @@ private suspend fun <T> onIo(block: () -> T): T = withContext(Dispatchers.IO) { 
 private fun ApplicationCall.validCsrf(cookieName: String = "reader_csrf"): Boolean {
     val cookie = request.cookies[cookieName] ?: return false
     val header = request.headers["X-CSRF-Token"] ?: return false
+    return csrfTokensMatch(cookie, header)
+}
+
+internal fun csrfTokensMatch(cookie: String?, header: String?): Boolean {
+    if (cookie == null || header == null) return false
     return MessageDigest.isEqual(cookie.toByteArray(), header.toByteArray())
 }
 
