@@ -2,6 +2,8 @@ package br.com.jaquesprojetos.blog.backend
 
 import java.nio.charset.StandardCharsets
 import java.util.Base64
+import br.com.jaquesprojetos.blog.contracts.ReaderLoginRequest
+import io.ktor.server.plugins.BadRequestException
 import kotlin.test.Test
 import kotlin.test.assertFailsWith
 import kotlin.test.assertEquals
@@ -91,5 +93,11 @@ class AutheliaOidcTest {
         assertFalse(csrfTokensMatch("csrf-random-value", "different-value"))
         assertFalse(csrfTokensMatch("csrf-random-value", null))
         assertFalse(csrfTokensMatch(null, "csrf-random-value"))
+    }
+
+    @Test
+    fun `malformed or incomplete reader login bodies are classified as bad requests`() {
+        assertFailsWith<BadRequestException> { decodeRequestJson<ReaderLoginRequest>("{}") }
+        assertFailsWith<BadRequestException> { decodeRequestJson<ReaderLoginRequest>("not-json") }
     }
 }

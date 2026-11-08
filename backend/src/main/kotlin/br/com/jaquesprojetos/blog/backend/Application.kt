@@ -45,6 +45,7 @@ import io.ktor.server.routing.route
 import io.ktor.server.routing.routing
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.encodeToString
+import kotlinx.serialization.SerializationException
 import kotlinx.serialization.json.Json
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
@@ -454,7 +455,13 @@ internal fun Route.adminOidcCallback(
     }
 }
 
-private suspend inline fun <reified T> ApplicationCall.readJson(): T = Json.decodeFromString(receiveText())
+private suspend inline fun <reified T> ApplicationCall.readJson(): T = decodeRequestJson(receiveText())
+
+internal inline fun <reified T> decodeRequestJson(body: String): T = try {
+    Json.decodeFromString(body)
+} catch (failure: SerializationException) {
+    throw BadRequestException("Invalid request body", failure)
+}
 
 private suspend fun <T> onIo(block: () -> T): T = withContext(Dispatchers.IO) { block() }
 
