@@ -154,8 +154,8 @@ fun Application.module() {
                 if (!call.validCsrf("admin_csrf")) call.respond(HttpStatusCode.Forbidden, ErrorResponse("csrf_failed", "Request could not be verified"))
                 else {
                     onIo { adminAuth.revoke(call.request.cookies["admin_session"]) }
-                    call.response.cookies.append(Cookie("admin_session", "", maxAge = 0, secure = secureCookies, httpOnly = true, extensions = mapOf("SameSite" to "Lax")))
-                    call.response.cookies.append(Cookie("admin_csrf", "", maxAge = 0, secure = secureCookies, httpOnly = false, extensions = mapOf("SameSite" to "Lax")))
+                    call.response.cookies.append(Cookie("admin_session", "", maxAge = 0, path = "/", secure = secureCookies, httpOnly = true, extensions = mapOf("SameSite" to "Lax")))
+                    call.response.cookies.append(Cookie("admin_csrf", "", maxAge = 0, path = "/", secure = secureCookies, httpOnly = false, extensions = mapOf("SameSite" to "Lax")))
                     call.respond(HttpStatusCode.NoContent)
                 }
             }
@@ -319,8 +319,12 @@ fun Application.module() {
                     call.respond(HttpStatusCode.Unauthorized, ErrorResponse("invalid_credentials", "Email or password is incorrect, or the email is not verified"))
                 } else {
                     val csrf = UUID.randomUUID().toString() + UUID.randomUUID().toString()
-                    call.response.cookies.append(Cookie("reader_session", session.token, maxAge = 60 * 60 * 24 * 30, secure = secureCookies, httpOnly = true, extensions = mapOf("SameSite" to "Strict")))
-                    call.response.cookies.append(Cookie("reader_csrf", csrf, maxAge = 60 * 60 * 24 * 30, secure = secureCookies, httpOnly = false, extensions = mapOf("SameSite" to "Strict")))
+                    listOf("/ljblog/api/v1/auth", "/api/v1/auth").forEach { legacyPath ->
+                        call.response.cookies.append(Cookie("reader_session", "", maxAge = 0, path = legacyPath, secure = secureCookies, httpOnly = true, extensions = mapOf("SameSite" to "Strict")))
+                        call.response.cookies.append(Cookie("reader_csrf", "", maxAge = 0, path = legacyPath, secure = secureCookies, httpOnly = false, extensions = mapOf("SameSite" to "Strict")))
+                    }
+                    call.response.cookies.append(Cookie("reader_session", session.token, maxAge = 60 * 60 * 24 * 30, path = "/", secure = secureCookies, httpOnly = true, extensions = mapOf("SameSite" to "Strict")))
+                    call.response.cookies.append(Cookie("reader_csrf", csrf, maxAge = 60 * 60 * 24 * 30, path = "/", secure = secureCookies, httpOnly = false, extensions = mapOf("SameSite" to "Strict")))
                     call.respond(br.com.jaquesprojetos.blog.contracts.ReaderSessionResponse(session.id.toString(), session.email))
                 }
             }
@@ -328,8 +332,8 @@ fun Application.module() {
                 if (!call.validCsrf()) call.respond(HttpStatusCode.Forbidden, ErrorResponse("csrf_failed", "Request could not be verified"))
                 else {
                     onIo { readers.logout(call.request.cookies["reader_session"]) }
-                    call.response.cookies.append(Cookie("reader_session", "", maxAge = 0, secure = secureCookies, httpOnly = true, extensions = mapOf("SameSite" to "Strict")))
-                    call.response.cookies.append(Cookie("reader_csrf", "", maxAge = 0, secure = secureCookies, httpOnly = false, extensions = mapOf("SameSite" to "Strict")))
+                    call.response.cookies.append(Cookie("reader_session", "", maxAge = 0, path = "/", secure = secureCookies, httpOnly = true, extensions = mapOf("SameSite" to "Strict")))
+                    call.response.cookies.append(Cookie("reader_csrf", "", maxAge = 0, path = "/", secure = secureCookies, httpOnly = false, extensions = mapOf("SameSite" to "Strict")))
                     call.respond(MessageResponse("Signed out."))
                 }
             }
@@ -448,8 +452,8 @@ internal fun Route.adminOidcCallback(
             call.respond(HttpStatusCode.Unauthorized, ErrorResponse("oidc_login_failed", "Could not complete the Authelia sign-in"))
         } else {
             val csrf = UUID.randomUUID().toString() + UUID.randomUUID().toString()
-            call.response.cookies.append(Cookie("admin_session", session.token, maxAge = 60 * 60 * 8, secure = secureCookies, httpOnly = true, extensions = mapOf("SameSite" to "Lax")))
-            call.response.cookies.append(Cookie("admin_csrf", csrf, maxAge = 60 * 60 * 8, secure = secureCookies, httpOnly = false, extensions = mapOf("SameSite" to "Lax")))
+            call.response.cookies.append(Cookie("admin_session", session.token, maxAge = 60 * 60 * 8, path = "/", secure = secureCookies, httpOnly = true, extensions = mapOf("SameSite" to "Lax")))
+            call.response.cookies.append(Cookie("admin_csrf", csrf, maxAge = 60 * 60 * 8, path = "/", secure = secureCookies, httpOnly = false, extensions = mapOf("SameSite" to "Lax")))
             call.respondRedirect(webBaseUrl?.trimEnd('/')?.plus("/admin") ?: "http://localhost:8080/admin")
         }
     }

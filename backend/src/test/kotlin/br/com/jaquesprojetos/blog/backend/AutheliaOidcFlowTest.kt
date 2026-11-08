@@ -80,9 +80,11 @@ class AutheliaOidcFlowTest {
             assertTrue("Secure" in sessionCookie)
             assertTrue("HttpOnly" in sessionCookie)
             assertTrue("SameSite=Lax" in sessionCookie)
+            assertTrue("Path=/" in sessionCookie)
             assertTrue("Secure" in csrfCookie)
             assertTrue("HttpOnly" !in csrfCookie)
             assertTrue("SameSite=Lax" in csrfCookie)
+            assertTrue("Path=/" in csrfCookie)
         }
     }
 

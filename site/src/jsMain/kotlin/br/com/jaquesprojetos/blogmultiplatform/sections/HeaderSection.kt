@@ -1,6 +1,7 @@
 package br.com.jaquesprojetos.blogmultiplatform.sections
 
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -14,6 +15,8 @@ import br.com.jaquesprojetos.blogmultiplatform.util.Constants.HEADER_HEIGHT
 import br.com.jaquesprojetos.blogmultiplatform.util.Constants.PAGE_WIDTH_EX
 import br.com.jaquesprojetos.blogmultiplatform.util.Id
 import br.com.jaquesprojetos.blogmultiplatform.util.Res
+import br.com.jaquesprojetos.blogmultiplatform.util.ReaderSessionState
+import br.com.jaquesprojetos.blogmultiplatform.util.getBackend
 import com.varabyte.kobweb.compose.css.Cursor
 import com.varabyte.kobweb.compose.foundation.layout.Box
 import com.varabyte.kobweb.compose.foundation.layout.Row
@@ -30,6 +33,7 @@ import com.varabyte.kobweb.compose.ui.modifiers.margin
 import com.varabyte.kobweb.compose.ui.modifiers.maxWidth
 import com.varabyte.kobweb.compose.ui.modifiers.onClick
 import com.varabyte.kobweb.compose.ui.modifiers.width
+import com.varabyte.kobweb.compose.ui.toAttrs
 import com.varabyte.kobweb.core.rememberPageContext
 import com.varabyte.kobweb.silk.components.graphics.Image
 import com.varabyte.kobweb.silk.components.icons.fa.FaBars
@@ -40,6 +44,7 @@ import com.varabyte.kobweb.silk.components.text.SpanText
 import kotlinx.browser.document
 import org.jetbrains.compose.web.css.percent
 import org.jetbrains.compose.web.css.px
+import org.jetbrains.compose.web.dom.Button
 import org.w3c.dom.HTMLInputElement
 
 @Composable
@@ -87,6 +92,11 @@ fun Header(
 ) {
     var fullSearchBarOpened by remember { mutableStateOf(false) }
     val context = rememberPageContext()
+    LaunchedEffect(Unit) {
+        val session = runCatching { getBackend("favorites") }.getOrNull()
+        ReaderSessionState.signedIn = session?.ok == true
+        if (!ReaderSessionState.signedIn) ReaderSessionState.email = null
+    }
     Row(
         modifier = Modifier
             .fillMaxWidth(if (breakpoint > Breakpoint.MD) 80.percent else 90.percent)
@@ -155,11 +165,21 @@ fun Header(
                 fullSearchBarOpened = it
             }
         )
-        SpanText(
-            text = "Account",
-            modifier = Modifier.margin(left = 16.px).color(Theme.White.rgb).cursor(Cursor.Pointer)
+        val accountLabel = if (ReaderSessionState.signedIn) "Reader signed in" else "Sign in"
+        Button(
+            attrs = Modifier.classNames("reader-session-nav").margin(left = 16.px).cursor(Cursor.Pointer)
                 .onClick { context.router.navigateTo("/account") }
-        )
+                .toAttrs {
+                    attr(
+                        "aria-label",
+                        if (ReaderSessionState.signedIn) {
+                            "Reader account signed in. Open account options."
+                        } else {
+                            "Sign in or create a reader account."
+                        }
+                    )
+                }
+        ) { SpanText(accountLabel) }
     }
 }
 

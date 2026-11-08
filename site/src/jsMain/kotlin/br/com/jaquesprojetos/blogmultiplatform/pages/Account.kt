@@ -10,6 +10,7 @@ import androidx.compose.runtime.setValue
 import br.com.jaquesprojetos.blogmultiplatform.models.Theme
 import br.com.jaquesprojetos.blogmultiplatform.navigation.Screen
 import br.com.jaquesprojetos.blogmultiplatform.util.Res
+import br.com.jaquesprojetos.blogmultiplatform.util.ReaderSessionState
 import br.com.jaquesprojetos.blogmultiplatform.util.browserCookie
 import br.com.jaquesprojetos.blogmultiplatform.util.getBackend
 import br.com.jaquesprojetos.blogmultiplatform.util.postBackendJson
@@ -21,6 +22,7 @@ import com.varabyte.kobweb.compose.ui.Alignment
 import com.varabyte.kobweb.compose.ui.Modifier
 import com.varabyte.kobweb.compose.ui.modifiers.backgroundColor
 import com.varabyte.kobweb.compose.ui.modifiers.borderRadius
+import com.varabyte.kobweb.compose.ui.modifiers.classNames
 import com.varabyte.kobweb.compose.ui.modifiers.color
 import com.varabyte.kobweb.compose.ui.modifiers.cursor
 import com.varabyte.kobweb.compose.ui.modifiers.fillMaxWidth
@@ -43,6 +45,9 @@ import org.jetbrains.compose.web.attributes.InputType
 import org.jetbrains.compose.web.css.px
 import org.jetbrains.compose.web.dom.Button
 import org.jetbrains.compose.web.dom.Input
+import org.jetbrains.compose.web.dom.Label
+import org.jetbrains.compose.web.dom.Span
+import org.jetbrains.compose.web.dom.Text
 import org.w3c.dom.HTMLInputElement
 
 @Page
@@ -51,21 +56,36 @@ fun AccountPage() {
     val scope = rememberCoroutineScope()
     val context = rememberPageContext()
     var message by remember { mutableStateOf("Sign in or create an account to save favorites and comment.") }
-    var signedIn by remember { mutableStateOf(false) }
-    var loginMode by remember { mutableStateOf("visitor") }
+    var signedIn by remember { mutableStateOf(ReaderSessionState.signedIn) }
+    var loginMode by remember { mutableStateOf("") }
     val verifyToken = window.location.search.substringAfter("verify=", "").substringBefore('&').takeIf(String::isNotBlank)
     val resetToken = window.location.search.substringAfter("reset=", "").substringBefore('&').takeIf(String::isNotBlank)
     fun value(id: String) = (document.getElementById(id) as? HTMLInputElement)?.value.orEmpty()
     fun submit(path: String, body: String, success: String) {
         scope.launch {
             val response = runCatching { postBackendJson(path, body) }.getOrNull()
-            message = when {
-                response?.ok == true -> success
-                response?.status == 429 -> "Too many sign-in attempts. Wait one minute before trying again."
-                path == "auth/login" && response?.status == 401 -> "Visitor sign-in failed. Use a registered, verified reader email and password. Authelia is for Admin."
-                else -> "We couldn't complete your request. Check your details and try again."
+            if (path == "auth/login" && response?.ok == true) {
+                val session = runCatching { getBackend("favorites") }.getOrNull()
+                if (session?.ok == true) {
+                    signedIn = true
+                    ReaderSessionState.signedIn = true
+                    ReaderSessionState.email = value("reader-email").trim()
+                    message = "You are signed in as ${ReaderSessionState.email}. Continue to the blog."
+                } else {
+                    signedIn = false
+                    ReaderSessionState.signedIn = false
+                    ReaderSessionState.email = null
+                    message = "Sign-in was accepted, but this browser couldn't confirm the reader session. Allow cookies and try again."
+                }
+            } else {
+                message = when {
+                    response?.ok == true -> success
+                    response?.status == 429 -> "Too many sign-in attempts. Wait one minute before trying again."
+                    path == "auth/login" && response?.status == 401 -> "We could not sign you in. Check the email and password; reader accounts must be verified first."
+                    response == null -> "We could not reach the account service. Check your connection and try again."
+                    else -> "We couldn't complete your request. Check your details and try again."
+                }
             }
-            if (path == "auth/login" && response?.ok == true) signedIn = true
         }
     }
     LaunchedEffect(loginMode) {
@@ -73,71 +93,150 @@ fun AccountPage() {
             val response = runCatching { getBackend("favorites") }.getOrNull()
             if (response?.ok == true) {
                 signedIn = true
-                message = "You are signed in. Favorites: ${response.body}"
+                ReaderSessionState.signedIn = true
+                message = "Reader session active. Continue to the blog to read, save favorites, and comment."
+            } else {
+                signedIn = false
+                ReaderSessionState.signedIn = false
+                ReaderSessionState.email = null
             }
         }
     }
-    Column(Modifier.width(640.px).fillMaxWidth().padding(24.px), horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.Top) {
+    Column(
+        modifier = Modifier.classNames("reader-account-panel"),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.Top,
+    ) {
         Image(
             modifier = Modifier.width(190.px).margin(bottom = 20.px).cursor(Cursor.Pointer)
                 .onClick { context.router.navigateTo(Screen.HomePage.route) },
             src = Res.Image.logoHome,
             description = "Convergencia Blog home",
         )
-        Row(verticalAlignment = Alignment.CenterVertically) {
-            Button(attrs = buttonStyle().onClick { loginMode = "visitor" }.toAttrs()) { SpanText("Visitor") }
-            Button(attrs = buttonStyle().onClick { loginMode = "admin" }.toAttrs()) { SpanText("Admin") }
-        }
-        if (loginMode == "admin") {
-            SpanText("Administrators sign in with Authelia.")
-            Button(attrs = buttonStyle().onClick {
-                context.router.navigateTo("/admin/login")
-            }.toAttrs()) { SpanText("Continue with Authelia") }
-        } else {
-            SpanText("Visitor sign-in uses a registered, verified email and password.")
-            Input(InputType.Email, attrs = Modifier.id("reader-email").fillMaxWidth().padding(12.px).toAttrs { attr("placeholder", "Email") })
-            Input(InputType.Password, attrs = Modifier.id("reader-password").fillMaxWidth().padding(12.px).toAttrs { attr("placeholder", "Password (at least 12 characters)") })
-            if (resetToken != null) {
-                SpanText("Set a new password to finish resetting your account.")
-                Button(attrs = buttonStyle().onClick {
-                    submit("auth/password-reset/complete", Json.encodeToString(mapOf("token" to resetToken, "password" to value("reader-password"))), "Password updated. Please sign in again.")
-                }.toAttrs()) { SpanText("Save new password") }
-            } else {
-                Row(horizontalArrangement = Arrangement.Start) {
-                    Button(attrs = buttonStyle().onClick {
-                        submit("auth/register", Json.encodeToString(mapOf("email" to value("reader-email"), "password" to value("reader-password"))), "If this email can be registered, we'll send you a verification email.")
-                    }.toAttrs()) { SpanText("Create account") }
-                    Button(attrs = buttonStyle().onClick {
-                        submit("auth/login", Json.encodeToString(mapOf("email" to value("reader-email"), "password" to value("reader-password"))), "You are now signed in.")
-                    }.toAttrs()) { SpanText("Sign in") }
-                }
-                Button(attrs = buttonStyle().onClick {
-                    submit("auth/verify-email/request", Json.encodeToString(mapOf("email" to value("reader-email"))), "If your account needs verification, we'll send you an email.")
-                }.toAttrs()) { SpanText("Resend verification email") }
-                Button(attrs = buttonStyle().onClick {
-                    submit("auth/password-reset/request", Json.encodeToString(mapOf("email" to value("reader-email"))), "If the email is registered, we'll send you instructions.")
-                }.toAttrs()) { SpanText("Forgot password") }
+        if (signedIn) {
+            Span(attrs = {
+                attr("class", "reader-account-status")
+                attr("role", "status")
+                attr("aria-live", "polite")
+            }) {
+                Text(ReaderSessionState.email?.let { "Signed in as $it" } ?: "Reader account signed in")
             }
-            if (verifyToken != null) Button(attrs = buttonStyle().onClick {
-                submit("auth/verify-email", Json.encodeToString(mapOf("token" to verifyToken)), "Email verified. You can now sign in.")
-            }.toAttrs()) { SpanText("Verify my email") }
-            if (signedIn) {
+            Row(
+                modifier = Modifier.classNames("reader-account-actions"),
+                horizontalArrangement = Arrangement.Center,
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
                 Button(attrs = buttonStyle().onClick {
-                    scope.launch {
-                        val response = runCatching { getBackend("favorites") }.getOrNull()
-                        message = if (response?.ok == true) "Favorites: ${response.body}" else "Couldn't load favorites."
-                    }
-                }.toAttrs()) { SpanText("View favorites") }
-                Button(attrs = buttonStyle().onClick {
+                    context.router.navigateTo(Screen.HomePage.route)
+                }.toAttrs()) { SpanText("Continue to the blog") }
+                Button(attrs = buttonStyle().classNames("is-secondary").onClick {
                     scope.launch {
                         val csrf = browserCookie("reader_csrf")
                         val response = runCatching { postBackendJson("auth/logout", "{}", csrf) }.getOrNull()
-                        if (response?.ok == true) { signedIn = false; message = "You have signed out." }
+                        if (response?.ok == true) {
+                            signedIn = false
+                            ReaderSessionState.signedIn = false
+                            ReaderSessionState.email = null
+                            message = "You have signed out."
+                        } else {
+                            message = "Couldn't sign out. Please try again."
+                        }
                     }
                 }.toAttrs()) { SpanText("Sign out") }
             }
+        } else {
+            Row(
+                modifier = Modifier.classNames("reader-account-actions"),
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                Button(attrs = buttonStyle().onClick { loginMode = "visitor" }.toAttrs {
+                    attr("aria-pressed", (loginMode == "visitor").toString())
+                }) { SpanText("Visitor sign-in") }
+                Button(attrs = buttonStyle().onClick { loginMode = "admin" }.toAttrs {
+                    attr("aria-pressed", (loginMode == "admin").toString())
+                }) { SpanText("Admin") }
+            }
+            if (loginMode.isBlank()) {
+                SpanText("Choose Visitor sign-in to open the reader account form, or Admin for Authelia.")
+            } else if (loginMode == "admin") {
+                SpanText("Administrators sign in with Authelia.")
+                Button(attrs = buttonStyle().classNames("is-secondary").onClick {
+                    context.router.navigateTo("/admin/login")
+                }.toAttrs()) { SpanText("Continue with Authelia") }
+            } else {
+                SpanText("You can read the blog without an account. Reader accounts add favorites and comments.")
+                Label(forId = "reader-email", attrs = { attr("class", "reader-account-label") }) { Text("Email address") }
+                Input(InputType.Email, attrs = Modifier.classNames("reader-account-input").id("reader-email").fillMaxWidth().toAttrs {
+                    attr("placeholder", "you@example.com")
+                    attr("autocomplete", "email")
+                    attr("required", "")
+                })
+                Label(forId = "reader-password", attrs = { attr("class", "reader-account-label") }) { Text("Password") }
+                Input(InputType.Password, attrs = Modifier.classNames("reader-account-input").id("reader-password").fillMaxWidth().toAttrs {
+                    attr("placeholder", "At least 12 characters")
+                    attr("autocomplete", if (resetToken != null) "new-password" else "current-password")
+                    attr("minlength", "12")
+                    attr("required", "")
+                })
+                if (resetToken != null) {
+                    SpanText("Set a new password to finish resetting your account.")
+                    Button(attrs = buttonStyle().onClick {
+                        submit(
+                            "auth/password-reset/complete",
+                            Json.encodeToString(mapOf("token" to resetToken, "password" to value("reader-password"))),
+                            "Password updated. Please sign in again.",
+                        )
+                    }.toAttrs()) { SpanText("Save new password") }
+                } else {
+                    Row(
+                        modifier = Modifier.classNames("reader-account-actions"),
+                        horizontalArrangement = Arrangement.Center,
+                        verticalAlignment = Alignment.CenterVertically,
+                    ) {
+                        Button(attrs = buttonStyle().onClick {
+                            submit(
+                                "auth/register",
+                                Json.encodeToString(mapOf("email" to value("reader-email"), "password" to value("reader-password"))),
+                                "If this email can be registered, we'll send you a verification email.",
+                            )
+                        }.toAttrs()) { SpanText("Create account") }
+                        Button(attrs = buttonStyle().onClick {
+                            submit(
+                                "auth/login",
+                                Json.encodeToString(mapOf("email" to value("reader-email"), "password" to value("reader-password"))),
+                                "You are now signed in.",
+                            )
+                        }.toAttrs()) { SpanText("Sign in") }
+                    }
+                    Button(attrs = buttonStyle().onClick {
+                        submit(
+                            "auth/verify-email/request",
+                            Json.encodeToString(mapOf("email" to value("reader-email"))),
+                            "If your account needs verification, we'll send you an email.",
+                        )
+                    }.toAttrs()) { SpanText("Resend verification email") }
+                    Button(attrs = buttonStyle().onClick {
+                        submit(
+                            "auth/password-reset/request",
+                            Json.encodeToString(mapOf("email" to value("reader-email"))),
+                            "If the email is registered, we'll send you instructions.",
+                        )
+                    }.toAttrs()) { SpanText("Forgot password") }
+                }
+                if (verifyToken != null) Button(attrs = buttonStyle().onClick {
+                    submit(
+                        "auth/verify-email",
+                        Json.encodeToString(mapOf("token" to verifyToken)),
+                        "Email verified. You can now sign in.",
+                    )
+                }.toAttrs()) { SpanText("Verify my email") }
+            }
         }
-        SpanText(message)
+        Span(attrs = {
+            attr("class", "reader-account-message")
+            attr("role", "status")
+            attr("aria-live", "polite")
+        }) { Text(message) }
     }
 }
 
