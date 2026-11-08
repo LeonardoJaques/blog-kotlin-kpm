@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 440 96" role="img" aria-labelledby="title desc">
+  <title id="title">Convergencia Blog</title>
+  <desc id="desc">Vintage engraved emblem with converging paths and the Convergencia Blog wordmark</desc>
+  <g fill="none" stroke="#243d46" stroke-linecap="round" stroke-linejoin="round">
+    <circle cx="48" cy="48" r="42" stroke-width="2.5"/>
+    <circle cx="48" cy="48" r="35" stroke="#a66a3f" stroke-width="1.4"/>
+    <path d="M15 48h66M23 33l25 15 25-15M23 63l25-15 25 15M31 75l17-27 17 27M31 21l17 27 17-27" stroke-width="2"/>
+    <path d="M48 8v9M48 79v9M8 48h9M79 48h9M20 20l6 6M70 70l6 6M76 20l-6 6M26 70l-6 6" stroke="#a66a3f" stroke-width="1.7"/>
+  </g>
+  <circle cx="48" cy="48" r="3.5" fill="#a66a3f"/>
+  <text x="108" y="48" fill="#243d46" font-family="Georgia, 'Times New Roman', serif" font-size="34" font-weight="700" letter-spacing="1.8">CONVERGENCIA</text>
+  <path d="M109 60h315" stroke="#a66a3f" stroke-width="1.4"/>
+  <text x="111" y="82" fill="#805336" font-family="Georgia, 'Times New Roman', serif" font-size="15" letter-spacing="4.5">BLOG  ·  IDEAS IN MOTION</text>
+</svg>

@@ -15,8 +15,8 @@ object Constants {
 
 object Res {
     object Image {
-        const val logo = "/logo.svg"
-        const val logoHome = "logo.svg"
+        const val logo = "/convergencia-logo.svg"
+        const val logoHome = "convergencia-logo.svg"
         const val lagth = "/lagth.png"
     }
 

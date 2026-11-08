@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-labelledby="title">
+  <title id="title">Convergencia Blog</title>
+  <rect x="2" y="2" width="60" height="60" rx="12" fill="#f1e8d4"/>
+  <circle cx="32" cy="32" r="25" fill="none" stroke="#243d46" stroke-width="2.5"/>
+  <circle cx="32" cy="32" r="20" fill="none" stroke="#a66a3f" stroke-width="1.3"/>
+  <g fill="none" stroke="#243d46" stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2">
+    <path d="M12 32h40M17 22l15 10 15-10M17 42l15-10 15 10M23 49l9-17 9 17M23 15l9 17 9-17"/>
+  </g>
+  <circle cx="32" cy="32" r="3" fill="#a66a3f"/>
+</svg>

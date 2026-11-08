@@ -1,4 +1,4 @@
-# Blog Kotlin KMP
+# Convergencia Blog
 
 Blog multiplataforma em Kotlin, publicado em <https://jaquesprojetos.com.br/ljblog>. A interface usa Kobweb e Compose HTML; a API usa Ktor, PostgreSQL e Valkey. O projeto também contém contratos Kotlin compartilhados e um shell Android.
 
@@ -23,7 +23,7 @@ O Mailpit de desenvolvimento fica em `http://localhost:8025`. Não use as creden
 
 ## Identidade visual
 
-A interface pública combina a identidade técnica do site Jaques Projetos com uma direção editorial de desenho antigo: papel texturizado, tipografia serifada, molduras de tinta e fotografias em sépia.
+A interface pública combina a identidade técnica do site Jaques Projetos com uma direção editorial de desenho antigo: papel texturizado, tipografia serifada, molduras de tinta e fotografias em sépia. O logotipo e o favicon Convergencia seguem a mesma linguagem de gravura.
 
 O schema PostgreSQL inclui posts, contas e tokens de leitores, sessões, favoritos, comentários moderados, sessões/transações OIDC, chaves idempotentes, tarefas Tars e outbox.
 

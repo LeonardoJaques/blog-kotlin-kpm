@@ -123,13 +123,13 @@ fun Header(
             Image(
                 modifier = Modifier
                     .margin(left = 10.px, right = 50.px)
-                    .width(if (breakpoint >= Breakpoint.SM) 100.px else 70.px)
+                    .width(if (breakpoint >= Breakpoint.SM) 172.px else 146.px)
                     .cursor(Cursor.Pointer)
                     .onClick {
                         context.router.navigateTo(Screen.HomePage.route)
                     },
                 src = logo,
-                description = "Logo Image"
+                description = "Convergencia Blog logo"
             )
         }
 
@@ -156,7 +156,7 @@ fun Header(
             }
         )
         SpanText(
-            text = "Conta",
+            text = "Account",
             modifier = Modifier.margin(left = 16.px).color(Theme.White.rgb).cursor(Cursor.Pointer)
                 .onClick { context.router.navigateTo("/account") }
         )

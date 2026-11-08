@@ -20,7 +20,8 @@ version = "1.0-SNAPSHOT"
 kobweb {
     app {
         index {
-            description.set("A Blog about technology byLeonardo Jaques")
+            description.set("Convergencia Blog — architecture, technology and ideas")
+            faviconPath.set("/favicon.svg")
             head.add {
                 script {
                     src =
@@ -55,7 +56,7 @@ val versionProductionScript by tasks.registering(Copy::class) {
     from(layout.buildDirectory.file("kotlin-webpack/js/productionExecutable/blogmultiplatform.js"))
     from(layout.buildDirectory.file("kotlin-webpack/js/productionExecutable/blogmultiplatform.js.map"))
     into(layout.buildDirectory.dir("kotlin-webpack/js/productionExecutable"))
-    rename { original -> original.replace("blogmultiplatform", "blogmultiplatform-vintage3") }
+    rename { original -> original.replace("blogmultiplatform", "blogmultiplatform-vintage4") }
 }
 
 tasks.named("kobwebExport") {
@@ -65,7 +66,7 @@ tasks.named("kobwebExport") {
         exportedIndex.writeText(
             exportedIndex.readText().replace(
                 "/ljblog/blogmultiplatform.js",
-                "/ljblog/blogmultiplatform-vintage3.js"
+                "/ljblog/blogmultiplatform-vintage4.js"
             )
         )
     }
@@ -74,10 +75,10 @@ tasks.named("kobwebExport") {
 tasks.register("publishVersionedScript") {
     dependsOn("kobwebExport")
     doLast {
-        val versionedScript = layout.buildDirectory.file("kotlin-webpack/js/productionExecutable/blogmultiplatform-vintage3.js").get().asFile
-        val versionedMap = layout.buildDirectory.file("kotlin-webpack/js/productionExecutable/blogmultiplatform-vintage3.js.map").get().asFile
+        val versionedScript = layout.buildDirectory.file("kotlin-webpack/js/productionExecutable/blogmultiplatform-vintage4.js").get().asFile
+        val versionedMap = layout.buildDirectory.file("kotlin-webpack/js/productionExecutable/blogmultiplatform-vintage4.js.map").get().asFile
         val resourcesDirectory = layout.projectDirectory.dir(".kobweb/site/resources").asFile
-        versionedScript.copyTo(resourcesDirectory.resolve("blogmultiplatform-vintage3.js"), overwrite = true)
+        versionedScript.copyTo(resourcesDirectory.resolve("blogmultiplatform-vintage4.js"), overwrite = true)
         versionedMap.copyTo(resourcesDirectory.resolve("blogmultiplatform.js.map"), overwrite = true)
     }
 }
