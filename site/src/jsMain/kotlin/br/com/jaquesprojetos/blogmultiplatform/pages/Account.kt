@@ -52,21 +52,29 @@ fun AccountPage() {
     val context = rememberPageContext()
     var message by remember { mutableStateOf("Sign in or create an account to save favorites and comment.") }
     var signedIn by remember { mutableStateOf(false) }
+    var loginMode by remember { mutableStateOf("visitor") }
     val verifyToken = window.location.search.substringAfter("verify=", "").substringBefore('&').takeIf(String::isNotBlank)
     val resetToken = window.location.search.substringAfter("reset=", "").substringBefore('&').takeIf(String::isNotBlank)
     fun value(id: String) = (document.getElementById(id) as? HTMLInputElement)?.value.orEmpty()
     fun submit(path: String, body: String, success: String) {
         scope.launch {
             val response = runCatching { postBackendJson(path, body) }.getOrNull()
-            message = if (response?.ok == true) success else "We couldn't complete your request. Check your details and try again."
+            message = when {
+                response?.ok == true -> success
+                response?.status == 429 -> "Too many sign-in attempts. Wait one minute before trying again."
+                path == "auth/login" && response?.status == 401 -> "Visitor sign-in failed. Use a registered, verified reader email and password. Authelia is for Admin."
+                else -> "We couldn't complete your request. Check your details and try again."
+            }
             if (path == "auth/login" && response?.ok == true) signedIn = true
         }
     }
-    LaunchedEffect(Unit) {
-        val response = runCatching { getBackend("favorites") }.getOrNull()
-        if (response?.ok == true) {
-            signedIn = true
-            message = "You are signed in. Favorites: ${response.body}"
+    LaunchedEffect(loginMode) {
+        if (loginMode == "visitor") {
+            val response = runCatching { getBackend("favorites") }.getOrNull()
+            if (response?.ok == true) {
+                signedIn = true
+                message = "You are signed in. Favorites: ${response.body}"
+            }
         }
     }
     Column(Modifier.width(640.px).fillMaxWidth().padding(24.px), horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.Top) {
@@ -76,47 +84,58 @@ fun AccountPage() {
             src = Res.Image.logoHome,
             description = "Convergencia Blog home",
         )
-        SpanText("Reader account")
-        Input(InputType.Email, attrs = Modifier.id("reader-email").fillMaxWidth().padding(12.px).toAttrs { attr("placeholder", "Email") })
-        Input(InputType.Password, attrs = Modifier.id("reader-password").fillMaxWidth().padding(12.px).toAttrs { attr("placeholder", "Password (at least 12 characters)") })
-        if (resetToken != null) {
-            SpanText("Set a new password to finish resetting your account.")
-            Button(attrs = buttonStyle().onClick {
-                submit("auth/password-reset/complete", Json.encodeToString(mapOf("token" to resetToken, "password" to value("reader-password"))), "Password updated. Please sign in again.")
-            }.toAttrs()) { SpanText("Save new password") }
-        } else {
-            Row(horizontalArrangement = Arrangement.Start) {
-                Button(attrs = buttonStyle().onClick {
-                    submit("auth/register", Json.encodeToString(mapOf("email" to value("reader-email"), "password" to value("reader-password"))), "If this email can be registered, we'll send you a verification email.")
-                }.toAttrs()) { SpanText("Create account") }
-                Button(attrs = buttonStyle().onClick {
-                    submit("auth/login", Json.encodeToString(mapOf("email" to value("reader-email"), "password" to value("reader-password"))), "You are now signed in.")
-                }.toAttrs()) { SpanText("Sign in") }
-            }
-            Button(attrs = buttonStyle().onClick {
-                submit("auth/verify-email/request", Json.encodeToString(mapOf("email" to value("reader-email"))), "If your account needs verification, we'll send you an email.")
-            }.toAttrs()) { SpanText("Resend verification email") }
-            Button(attrs = buttonStyle().onClick {
-                submit("auth/password-reset/request", Json.encodeToString(mapOf("email" to value("reader-email"))), "If the email is registered, we'll send you instructions.")
-            }.toAttrs()) { SpanText("Forgot password") }
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            Button(attrs = buttonStyle().onClick { loginMode = "visitor" }.toAttrs()) { SpanText("Visitor") }
+            Button(attrs = buttonStyle().onClick { loginMode = "admin" }.toAttrs()) { SpanText("Admin") }
         }
-        if (verifyToken != null) Button(attrs = buttonStyle().onClick {
-            submit("auth/verify-email", Json.encodeToString(mapOf("token" to verifyToken)), "Email verified. You can now sign in.")
-        }.toAttrs()) { SpanText("Verify my email") }
-        if (signedIn) {
+        if (loginMode == "admin") {
+            SpanText("Administrators sign in with Authelia.")
             Button(attrs = buttonStyle().onClick {
-                scope.launch {
-                    val response = runCatching { getBackend("favorites") }.getOrNull()
-                    message = if (response?.ok == true) "Favorites: ${response.body}" else "Couldn't load favorites."
+                context.router.navigateTo("/admin/login")
+            }.toAttrs()) { SpanText("Continue with Authelia") }
+        } else {
+            SpanText("Visitor sign-in uses a registered, verified email and password.")
+            Input(InputType.Email, attrs = Modifier.id("reader-email").fillMaxWidth().padding(12.px).toAttrs { attr("placeholder", "Email") })
+            Input(InputType.Password, attrs = Modifier.id("reader-password").fillMaxWidth().padding(12.px).toAttrs { attr("placeholder", "Password (at least 12 characters)") })
+            if (resetToken != null) {
+                SpanText("Set a new password to finish resetting your account.")
+                Button(attrs = buttonStyle().onClick {
+                    submit("auth/password-reset/complete", Json.encodeToString(mapOf("token" to resetToken, "password" to value("reader-password"))), "Password updated. Please sign in again.")
+                }.toAttrs()) { SpanText("Save new password") }
+            } else {
+                Row(horizontalArrangement = Arrangement.Start) {
+                    Button(attrs = buttonStyle().onClick {
+                        submit("auth/register", Json.encodeToString(mapOf("email" to value("reader-email"), "password" to value("reader-password"))), "If this email can be registered, we'll send you a verification email.")
+                    }.toAttrs()) { SpanText("Create account") }
+                    Button(attrs = buttonStyle().onClick {
+                        submit("auth/login", Json.encodeToString(mapOf("email" to value("reader-email"), "password" to value("reader-password"))), "You are now signed in.")
+                    }.toAttrs()) { SpanText("Sign in") }
                 }
-            }.toAttrs()) { SpanText("View favorites") }
-            Button(attrs = buttonStyle().onClick {
-                scope.launch {
-                    val csrf = browserCookie("reader_csrf")
-                    val response = runCatching { postBackendJson("auth/logout", "{}", csrf) }.getOrNull()
-                    if (response?.ok == true) { signedIn = false; message = "You have signed out." }
-                }
-            }.toAttrs()) { SpanText("Sign out") }
+                Button(attrs = buttonStyle().onClick {
+                    submit("auth/verify-email/request", Json.encodeToString(mapOf("email" to value("reader-email"))), "If your account needs verification, we'll send you an email.")
+                }.toAttrs()) { SpanText("Resend verification email") }
+                Button(attrs = buttonStyle().onClick {
+                    submit("auth/password-reset/request", Json.encodeToString(mapOf("email" to value("reader-email"))), "If the email is registered, we'll send you instructions.")
+                }.toAttrs()) { SpanText("Forgot password") }
+            }
+            if (verifyToken != null) Button(attrs = buttonStyle().onClick {
+                submit("auth/verify-email", Json.encodeToString(mapOf("token" to verifyToken)), "Email verified. You can now sign in.")
+            }.toAttrs()) { SpanText("Verify my email") }
+            if (signedIn) {
+                Button(attrs = buttonStyle().onClick {
+                    scope.launch {
+                        val response = runCatching { getBackend("favorites") }.getOrNull()
+                        message = if (response?.ok == true) "Favorites: ${response.body}" else "Couldn't load favorites."
+                    }
+                }.toAttrs()) { SpanText("View favorites") }
+                Button(attrs = buttonStyle().onClick {
+                    scope.launch {
+                        val csrf = browserCookie("reader_csrf")
+                        val response = runCatching { postBackendJson("auth/logout", "{}", csrf) }.getOrNull()
+                        if (response?.ok == true) { signedIn = false; message = "You have signed out." }
+                    }
+                }.toAttrs()) { SpanText("Sign out") }
+            }
         }
         SpanText(message)
     }
